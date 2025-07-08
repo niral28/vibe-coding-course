@@ -10,23 +10,31 @@ Welcome to your first coding adventure! This guide will help you set up Python, 
 
 ---
 
-## 1. Installing Miniconda, Git, and Visual Studio Code 🐍
+## 1. Installing Miniconda, Git, and Cursor 🐍
 
-### Installing Visual Studio Code (Your Code Editor)
+### Installing Cursor (Your AI-Powered Code Editor)
 
-First, let's install VS Code - this is where you'll write your code! It's like Microsoft Word, but for programmers.
+We're going to use Cursor - it's like having a smart coding assistant built right into your editor! Perfect for our vibe coding approach.
 
 **Windows & Mac:**
-1. Go to [code.visualstudio.com](https://code.visualstudio.com)
+1. Go to [cursor.sh](https://cursor.sh)
 2. Click "Download for Windows" or "Download for Mac"
 3. Run the installer and follow the steps
-4. Launch VS Code when installation is complete
+4. Launch Cursor when installation is complete
 
-**Recommended VS Code Extensions:**
-Once VS Code is open, click the Extensions icon (puzzle piece) on the left sidebar and install:
+**Why Cursor is perfect for this course:**
+- **Built-in AI chat** - Ask questions about your code without leaving the editor
+- **Smart suggestions** - AI helps you write code faster
+- **Error explanations** - When something breaks, AI can explain what went wrong
+- **Modern vibe** - This is how coding feels in 2025!
+
+**Recommended Cursor Extensions:**
+Once Cursor is open, click the Extensions icon (puzzle piece) on the left sidebar and install:
 - **Python** (by Microsoft) - Helps with Python coding
 - **Python Debugger** (by Microsoft) - Helps find and fix errors
 - **Code Runner** - Lets you run code with a click
+
+**Pro tip:** Try pressing `Ctrl+L` (or `Cmd+L` on Mac) to open the AI chat panel - you can ask it questions about your code anytime!
 
 ### Installing Miniconda (Python + Package Manager)
 
@@ -154,16 +162,66 @@ while count < 3:
     count += 1
 ```
 
+### Fun Challenge: Drawing Shapes with Code! 🎨
+
+Let's use loops to create cool patterns. This is where coding gets creative!
+
+**Square Pattern:**
+```python
+# Draw a 5x5 square
+size = 5
+for i in range(size):
+    print("* " * size)
+```
+
+**Triangle Pattern:**
+```python
+# Draw a triangle
+height = 5
+for i in range(1, height + 1):
+    print("* " * i)
+```
+
+**Diamond Pattern (Challenge!):**
+```python
+# Draw a diamond - this one's tricky!
+size = 5
+
+# Top half (including middle)
+for i in range(1, size + 1):
+    spaces = " " * (size - i)
+    stars = "* " * i
+    print(spaces + stars)
+
+# Bottom half
+for i in range(size - 1, 0, -1):
+    spaces = " " * (size - i)
+    stars = "* " * i
+    print(spaces + stars)
+```
+
+**Your Turn - Shape Challenges:**
+Try creating these shapes (use Cursor's AI if you get stuck!):
+
+1. **Right Triangle:** A triangle that leans to the right
+2. **Hollow Square:** A square that's empty in the middle
+3. **Christmas Tree:** A triangle with a trunk at the bottom
+4. **Heart Shape:** Get creative with this one!
+
+**Cursor AI Tip:** If you want to try these challenges, ask Cursor's AI: "Can you help me draw a [shape name] using Python loops and print statements?"
+
 ### Try it yourself!
 Create a file called `python_practice.py` and experiment with these concepts!
 
-**How to create and run a Python file in VS Code:**
-1. Open VS Code
+**How to create and run a Python file in Cursor:**
+1. Open Cursor
 2. Click "File" → "New File"
-3. Save it as `python_practice.py` (the .py extension tells VS Code it's Python)
+3. Save it as `python_practice.py` (the .py extension tells Cursor it's Python)
 4. Write some Python code
 5. Right-click in the editor and select "Run Python File in Terminal"
 6. Or use the play button in the top-right corner if you installed Code Runner
+
+**Cursor AI tip:** If you get stuck, press `Ctrl+L` (or `Cmd+L` on Mac) and ask the AI: "Can you explain what this code does?" or "Why am I getting an error?"
 
 ---
 
@@ -246,12 +304,14 @@ if __name__ == "__main__":
 ```bash
 conda activate gemini-project
 ```
-2. Open VS Code
+2. Open Cursor
 3. Create a new file and save it as `gemini_hello.py`
 4. Copy and paste the code above
 5. Replace `YOUR_API_KEY_HERE` with your actual API key
 6. Right-click in the editor and select "Run Python File in Terminal"
 7. Start chatting with AI!
+
+**Cursor AI tip:** If you run into any issues, press `Ctrl+L` (or `Cmd+L` on Mac) and ask the AI: "I'm getting an error with my Gemini API setup, can you help me debug this?"
 
 ### What's happening in the code:
 - We import the Gemini library
@@ -323,7 +383,7 @@ git push origin main
 ## 🎉 Congratulations!
 
 You've just:
-- ✅ Installed VS Code, Miniconda, and Git
+- ✅ Installed Cursor (with AI superpowers!), Miniconda, and Git
 - ✅ Created your first Python environment (like a pro!)
 - ✅ Learned basic Python concepts
 - ✅ Set up the Gemini AI SDK
@@ -333,24 +393,27 @@ You've just:
 ## Important Reminders
 - **Always activate your environment** before working on this project: `conda activate gemini-project`
 - **Keep your API key secret** - never share it or commit it to GitHub
+- **Use Cursor's AI chat** - Press `Ctrl+L` (or `Cmd+L` on Mac) whenever you need help
 - **Practice regularly** - coding is like learning a musical instrument!
 
 ## Next Steps
 - Experiment with different prompts in your Gemini chat
-- Try adding features like saving chat history
-- Learn about Python functions and classes
+- Try asking Cursor's AI to help you add features like saving chat history
+- Learn about Python functions and classes (ask Cursor to explain!)
 - Explore other AI models and APIs
-- Build more complex projects!
+- Build more complex projects with AI assistance!
 
 ## Resources
 - [Python.org Tutorial](https://docs.python.org/3/tutorial/)
 - [Google AI Studio](https://makersuite.google.com/)
 - [GitHub Guides](https://guides.github.com/)
 - [Gemini API Documentation](https://ai.google.dev/docs)
+- [Cursor Documentation](https://cursor.sh/docs)
 
 ## Need Help?
+- **First:** Try asking Cursor's AI chat (`Ctrl+L` or `Cmd+L`) - it's surprisingly good!
 - Ask questions in coding communities like Stack Overflow
 - Check out Python and AI tutorials on YouTube
 - Don't be afraid to experiment - coding is about learning by doing!
 
-Remember: Every expert was once a beginner. Keep coding and have fun! 🚀
+Remember: Every expert was once a beginner. Keep coding, keep vibing, and have fun! 🚀✨
