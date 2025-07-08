@@ -348,6 +348,23 @@ git config --global user.name "Your Name"
 git config --global user.email "your.email@example.com"
 ```
 
+### Step 3.5: Set up GitHub Authentication
+GitHub needs to verify it's really you when you upload code. We'll use a Personal Access Token (like a special password just for coding).
+
+**Create a Personal Access Token:**
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens)
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give it a name like "My Coding Projects"
+4. Set expiration to "90 days" (you can renew it later)
+5. Check these boxes:
+   - `repo` (Full control of private repositories)
+   - `workflow` (Update GitHub Action workflows)
+6. Click "Generate token"
+7. **IMPORTANT:** Copy the token immediately and save it somewhere safe (like a note on your phone). You won't be able to see it again!
+
+**Alternative: SSH Keys (More Advanced)**
+If you're feeling adventurous, you can set up SSH keys instead. Ask Cursor's AI: "How do I set up SSH keys for GitHub?" - it's more secure but a bit more complex.
+
 ### Step 4: Clone your repository
 1. On your GitHub repository page, click the green "Code" button
 2. Copy the HTTPS URL
