@@ -236,17 +236,20 @@ Now let's set up Google's Gemini AI so you can build AI-powered apps!
 4. Copy your API key and save it somewhere safe!
 
 ### Step 2: Install the Gemini SDK
+
+
 Make sure your gemini-project environment is activated first:
 ```bash
 conda activate gemini-project
 ```
 
-Then install the Gemini SDK:
+Then install the Gemini SDK, view docs [here](https://ai.google.dev/gemini-api/docs/quickstart):
 ```bash
-pip install google-generativeai
+pip install -q -U google-genai
 ```
 
 ### Step 3: Set up your environment
+
 Create a new file called `.env` in your project folder:
 ```
 GEMINI_API_KEY=your_api_key_here
@@ -256,48 +259,6 @@ Replace `your_api_key_here` with your actual API key.
 **Important:** Never share your API key publicly or commit it to GitHub!
 
 ---
-
-## 4. Hello World with Gemini 🌟
-
-Let's create your first AI-powered program!
-
-Create a file called `gemini_hello.py`:
-
-```python
-import google.generativeai as genai
-import os
-
-# Configure the API key
-# For now, we'll put the key directly in the code
-# (In real projects, use environment variables)
-api_key = "YOUR_API_KEY_HERE"  # Replace with your actual key
-genai.configure(api_key=api_key)
-
-# Create a model instance
-model = genai.GenerativeModel('gemini-pro')
-
-# Simple chat completion
-def chat_with_gemini(prompt):
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return f"Error: {e}"
-
-# Test it out!
-if __name__ == "__main__":
-    print("🤖 Welcome to Gemini Chat!")
-    print("Type 'quit' to exit\n")
-    
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == 'quit':
-            print("Goodbye!")
-            break
-        
-        response = chat_with_gemini(user_input)
-        print(f"Gemini: {response}\n")
-```
 
 ### How to run it:
 1. Make sure your environment is activated:
@@ -321,7 +282,13 @@ conda activate gemini-project
 - We create a simple chat loop
 
 ---
+## 4. Python & Gemini - Hello World
 
+- Check out coding examples:
+    -  [Python Exercises](./intro_to_python.py)
+    -  [Gemini Exercises](./intro_to_gemini.py)
+
+---
 ## 5. GitHub - Share Your Code 🐙
 
 GitHub is like Google Drive for code! Let's learn how to save and share your projects.
@@ -422,7 +389,7 @@ You've just:
 
 ## Resources
 - [Python.org Tutorial](https://docs.python.org/3/tutorial/)
-- [Google AI Studio](https://makersuite.google.com/)
+- [Google AI Studio](https://aistudio.google.com/prompts/new_chat)
 - [GitHub Guides](https://guides.github.com/)
 - [Gemini API Documentation](https://ai.google.dev/docs)
 - [Cursor Documentation](https://cursor.sh/docs)
