@@ -21,7 +21,7 @@ def generate_gemini_response(prompt:str, model:str="gemini-2.5-flash"):
 
 # Feel free to change the prompt and model to see how the response changes!
 # Models listed at: https://ai.google.dev/gemini-api/docs/models
-# generate_gemini_response("Tell me a good joke about vibe coders!", model="gemini-2.5-flash")
+# generate_gemini_response("Who's the president of the United States?", model="gemini-2.5-flash")
 
 # Ok now that we've got the basics down, let's start building some more complex programs!
 
@@ -79,7 +79,7 @@ def chat_with_gemini(max_user_turns:int = 5, model:str="gemini-2.5-flash"):
             messages=messages
         )
         print(f'Assistant: {response.choices[0].message.content}')
-    
+    print(messages)
 # chat_with_gemini(max_user_turns=2, model="gemini-2.5-flash")
 
 
@@ -101,7 +101,7 @@ def get_user_input():
 # Extension ideas: Implement a get_hint_function, get_word_of_the_day_function, validate_word_function, etc.
 def chat_with_gemini_function_calling(max_user_turns:int = 5, model:str="gemini-2.5-pro"):
     messages = [
-            {"role": "system", "content": "You are a Wordle game that the user plays via chat. Call get_user_input() when you need the user's guess. Call end_game() when the game is over (won, lost, or quit). You handle all game logic including tracking guesses, checking letters, and providing feedback."},
+            {"role": "system", "content": "You are a Wordle game that the user plays via chat. Call get_user_input() when you need the user's guess. Note the user may quit the game by typing in 'q'. You handle all game logic including tracking guesses, checking letters, and providing feedback. Each round the system will validate the guess and give them the hint (using color emojis, green corresponds to letter in correct position, yellow corresponds to letter in incorrect position, and gray corresponds to letter not in the word) that you should display."},
             {"role": "user", "content": "[system] Start a new Wordle game"},
         ]
     
@@ -233,20 +233,45 @@ def get_word_of_the_day(filename):
                 result = line.strip()
     return result
 
-def validate_word(word):
-    if not word or len(word.strip()) != 5:
-        return False
-    return True
+def validate_word(guess:str, correct_word:str) -> str:
+    if not guess or len(guess.strip()) != 5:
+        return "Invalid Input, ask user to try again, tell them the word must be exactly 5 letters long"
+
+    if guess.strip().lower() == correct_word.strip().lower():
+        return f"User correctly guessed the word {correct_word}"
+    else:
+        result = []
+        for i in range(5):
+            if guess[i].lower() == correct_word[i].lower():
+                result.append("🟩")
+            elif guess[i].lower() in correct_word.lower():
+                result.append("🟨")
+            else:
+                result.append("⬜")
+    return f'This is the next hint(based on the correct position of the letters): {" | ".join(result)}'
     
+
+def end_game(reason:str, answer:str) -> str:
+    if reason == 'WON':
+        return f"Congratulations, you won the game!! 🎉🎉🎉"
+    elif reason == 'LOST':
+        return f"Sorry! You lost the game. 😔 Correct answer was: {answer}"
+    else:
+        return f"Game ended: {reason}. I'm sorry you quit. 🫠 Correct answer was: {answer}"
+
+import uuid
+def generate_call_id(prefix="call_"):
+     return f"{prefix}{uuid.uuid4()}"
 
 # RAG with Gemini
 # Extension ideas: Implement a get_hint_function, structured to show correct letters in the word, and incorrect letters in the word.
-def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:str="worldle.txt", model:str="gemini-2.5-flash"):
+def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:str="wordle.txt", model:str="gemini-2.5-flash"):
     word_of_the_day = get_word_of_the_day(filename)
     print(f"Word of the day: {word_of_the_day}")
 
     messages = [
-            {"role": "system", "content": f"You are a Wordle game that the user plays via chat. The word the user is trying to guess is: {word_of_the_day} . Call get_user_input() and validate_word() when you need the user's guess (parallel tool calls). Call end_game() when the game is over (won, lost) OR when the User quits. You handle all game logic including tracking guesses, checking letters, and providing feedback."},
+            {"role": "system", "content": f"You are a Wordle game that the user plays via chat. The word the user is trying to guess is: {word_of_the_day}, they have 5 guesses! . Call get_user_input() and validate_word() when you need the user's guess (parallel tool calls). Call end_game() when the game is over (won, lost) OR when the User quits."+ \
+            "You are responsible for driving the game loop. Each round the system will validate the guess and give them the hint (using color emojis, green 🟩 corresponds to letter in correct position, yellow 🟨 corresponds to letter in incorrect position, and gray ⬜ corresponds to letter not in the word) that you should display."},
             {"role": "user", "content": "[system] Start a new Wordle game"},
         ]
     
@@ -297,7 +322,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
                             "parameters": {
                                 "type": "object",
                                 "properties": {
-                                    "reason": {"type": "string", "description": "The reason for ending the game"},
+                                    "reason": {"type": "enum", "description": "The reason for ending the game", "enum": ["WON", "LOST", "QUIT"]},
                                     "answer": {"type": "string", "description": "The correct answer"}
                                 },
                                 "required": ["reason", "answer"]
@@ -310,44 +335,87 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
             
             count += 1
             print(f"Count: {count}")
-            
+            guess_count=0
             # Handle the response
             if response.choices[0].message.tool_calls:
                 # Process tool calls
                 tool_calls = response.choices[0].message.tool_calls
-                
+                for tool_call in tool_calls:
+                    tool_call.id = generate_call_id()
+
+                print(response.choices[0].message)
+
                 # Add the assistant's message with tool calls to history
-                if response.choices[0].message.content:
+                if response.choices[0].message.content and response.choices[0].message.tool_calls is None:
+                    messages.append({
+                        "role": "assistant", 
+                        "content": response.choices[0].message.content,
+                    })
+                elif response.choices[0].message.content and tool_calls is not None:
                     messages.append({
                         "role": "assistant", 
                         "content": response.choices[0].message.content,
                         "tool_calls": tool_calls
                     })
+                elif tool_calls:
+                    messages.append({
+                        "role": "assistant", 
+                        "content": "",
+                        "tool_calls": tool_calls
+                    })
+                else:
+                    messages.append({
+                        "role": "assistant", 
+                        "content": "No response from the assistant, try again"
+                    })
 
                 if response.choices[0].message.content:
                     print("Assistant: ", response.choices[0].message.content)
-                print(tool_calls)
+                print()
+                print(messages)
+                print()
 
-                queued_tool_calls = []
+                user_input = None
+                
                 for tool_call in tool_calls:
-                    if tool_call.function.name == "validate_word":
-                        print("CALLING validate_word")
-                        queued_tool_calls.append(tool_call)
-                        continue
-                    
-                    elif tool_call.function.name == "get_user_input":
+                    if tool_call.function.name == "get_user_input":
                         print("CALLING get_user_input")
                         user_input = get_user_input()
-                        queued_tool_calls.insert(0,tool_call)                        
-                        continue
-   
+                        guess_count+=1
+                        # Add tool result to messages
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "name": tool_call.function.name,
+                            "content": f"User entered: {user_input} [This was guess {guess_count}/5]"
+                        })
+                        
+                    elif tool_call.function.name == "validate_word":
+                        print("CALLING validate_word")
+                        if user_input is not None:
+                            res = validate_word(user_input, word_of_the_day)
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "name":  tool_call.function.name,
+                                "content": res
+                            })
+                        else:
+                            messages.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "name": tool_call.function.name,
+                                "content": "Error: No user input to validate"
+                            })
+                            
                     elif tool_call.function.name == "end_game":
                         print("CALLING end_game")
                         import json
                         args = json.loads(tool_call.function.arguments)
                         reason = args.get("reason", "Game ended")
-                        answer = args.get("answer", "Unknown")
-                        
+                        if reason not in ["WON", "LOST", "QUIT"]:
+                            reason = "QUIT"
+
                         print(f"Game Over! Reason: {reason}, Answer: {answer}")
                         game_over = True
                         
@@ -355,27 +423,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tool_call.id,
-                            "content": f"Game ended: {reason}. Answer was: {answer}"
-                        })
-
-                user_input = None
-                for tool_call in queued_tool_calls:
-                    print(f"Tool call: {tool_call.function.name}")
-                    if user_input is not None and tool_call.function.name == "validate_word":
-                        print("CALLING validate_word")
-                        res = validate_word(user_input)
-                        messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": "Validated" if res else "Invalid Input, ask user to try again, tell them the word must be 5 letters long"
-                        })
-                    elif tool_call.function.name == "get_user_input":
-                        print("CALLING get_user_input")
-                        user_input = get_user_input()
-                        messages.append({
-                            "role": "tool",
-                            "tool_call_id": tool_call.id,
-                            "content": f"User entered: {user_input}"
+                            "content": end_game()
                         })
             elif response.choices[0].message.content:
                 # Regular response without tool calls
@@ -400,11 +448,13 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
     print("Game session ended")
 
 
-# chat_with_gemini_function_calling_with_rag(max_user_turns=3, filename="wordle.txt", model="gemini-2.5-flash")
+chat_with_gemini_function_calling_with_rag(max_user_turns=3, filename="wordle.txt", model="gemini-2.5-pro")
 
 # Interaractive Game -- exercise for you
 import requests
 def search_wikipedia(query):
+    from urllib.parse import quote
+    query = quote(query)
     url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{query}"
     response = requests.get(url)
     return response.json()
@@ -442,7 +492,6 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash"):
         model=model,
         messages=messages,
         temperature=0.0,
-        tools=tools,
         tool_choice="auto"
     )
 
@@ -450,4 +499,4 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash"):
     # TODO: Design a quiz based on the information you found
     # Think about the game loop, how to make it more engaging and interactive
 
-integrate_api_calls_with_gemini()
+# integrate_api_calls_with_gemini(model="gemini-2.5-pro")
