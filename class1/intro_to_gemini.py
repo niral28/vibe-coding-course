@@ -322,7 +322,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
                             "parameters": {
                                 "type": "object",
                                 "properties": {
-                                    "reason": {"type": "enum", "description": "The reason for ending the game", "enum": ["WON", "LOST", "QUIT"]},
+                                    "reason": {"type": "string", "description": "The reason for ending the game", "enum": ["WON", "LOST", "QUIT"]},
                                     "answer": {"type": "string", "description": "The correct answer"}
                                 },
                                 "required": ["reason", "answer"]
@@ -347,11 +347,13 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
 
                 # Add the assistant's message with tool calls to history
                 if response.choices[0].message.content and response.choices[0].message.tool_calls is None:
+                    print("Assistant: ", response.choices[0].message.content)
                     messages.append({
                         "role": "assistant", 
                         "content": response.choices[0].message.content,
                     })
                 elif response.choices[0].message.content and tool_calls is not None:
+                    print("Assistant: ", response.choices[0].message.content)
                     messages.append({
                         "role": "assistant", 
                         "content": response.choices[0].message.content,
@@ -413,6 +415,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
                         import json
                         args = json.loads(tool_call.function.arguments)
                         reason = args.get("reason", "Game ended")
+                        answer = args.get("answer", word_of_the_day)
                         if reason not in ["WON", "LOST", "QUIT"]:
                             reason = "QUIT"
 
@@ -423,7 +426,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
                         messages.append({
                             "role": "tool",
                             "tool_call_id": tool_call.id,
-                            "content": end_game()
+                            "content": end_game(reason, word_of_the_day)
                         })
             elif response.choices[0].message.content:
                 # Regular response without tool calls
@@ -460,43 +463,97 @@ def search_wikipedia(query):
     return response.json()
 
 
-from datetime import datetime
-def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash"):
-    messages = [
-            {"role": "system", "content": f"You are a helpful assistant that can search wikipedia for variety of facts and figures. And responsible for designing quizzes based on the information you find."},
-            {"role": "user", "content": f"[system] Find the information about something that happened in history today: {datetime.now().strftime('%Y-%m-%d')}"},
-        ]
-    
-    count = 0
-    client = OpenAI(
-        api_key=os.environ['GEMINI_API_KEY'],
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
-    )
+# from datetime import datetime
+# def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations:int=5):
+#     query = input("Enter a query: ")
+#     messages = [
+#             {"role": "system", "content": f"You are a helpful assistant that can search wikipedia for variety of facts and figures. If the user asks you a question and the answer is not found try rephrasing the question and searching again."},
+#             {"role": "user", "content": f"[system] Today's date is: {datetime.now().strftime('%Y-%m-%d')}, the user's question is: {query}"},
+#         ]
+#     count = 0
+#     client = OpenAI(
+#         api_key=os.environ['GEMINI_API_KEY'],
+#         base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+#     )
+#     tools = [
+#         {
+#             "type": "function",
+#             "name": "encyclopedia_search",
+#             "description": "Search wikipedia for variety of facts and figures.",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "query": {"type": "string", "description": "Keyword search query to find the relevant wikipedia article"}
+#                 },
+#                 "required": ["query"]
+#             }
+#         }, 
+#         {
+#             "type": "function",
+#             "name": "answer_question",
+#             "description": "Answer the user's question based on the information you found",
+#             "parameters": {
+#                 "type": "object",
+#                 "properties": {
+#                     "question": {"type": "string", "description": "The user's question"},
+#                     "success": {"type": "boolean", "description": "Whether the question was answered successfully"}
+#                 },
+#                 "required": ["question", "success"]
+#             }
+#         }
+#     ]
+#     count=0
+#     while True:
+#         count+=1
+#         if count > 5:
+#             print("Reached max iterations, break")
+#             messages.append({
+#                 "role": "assistant", 
+#                 "content": "I'm sorry, I couldn't find the answer to your question. Please try again."
+#             })
+#             break
+#         response = client.chat.completions.create(
+#             model=model,
+#             messages=messages,
+#             tools=tools,
+#             temperature=0.0)
+#         if response.choices[0].message.tool_calls:
+#             tool_calls = response.choices[0].message.tool_calls
+#             for tool_call in tool_calls:
+#                 tool_call.id = generate_call_id()
+#                 if tool_call.function.name == "encyclopedia_search":
+#                     query = tool_call.function.arguments.get("query", "")
+#                     messages.append({
+#                         "role": "tool",
+#                         "tool_call_id": tool_call.id,
+#                         "name": tool_call.function.name,
+#                         "content": f"Encyclopedia search: {query}, Results: {search_wikipedia(query)}"
+#                     })
+#                 elif tool_call.function.name == "answer_question":
+#                     question = tool_call.function.arguments.get("question", "")
+#                     success = tool_call.function.arguments.get("success", False)
+#                     if success:
+#                         messages.append({
+#                             "role": "tool",
+#                             "tool_call_id": tool_call.id,
+#                             "name": tool_call.function.name,
+#                             "content": f"Question: {question}, Success: {success}"
+#                         })
+#                     else:
+#                         messages.append({
+#                             "role": "tool",
+#                             "tool_call_id": tool_call.id,
+#                             "name": tool_call.function.name,
+#                             "content": f"Question: {question}, Success: {success}"
+#                         })
 
-    tools = [
-        {
-            "type": "function",
-            "name": "encyclopedia_search",
-            "description": "Search wikipedia for variety of facts and figures.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "Keyword search query to find the relevant wikipedia article"}
-                },
-                "required": ["query"]
-            }
-        }
-    ]
+#         print(f"Count: {count}")
+#         print(messages)
+#         print()
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.0,
-        tool_choice="auto"
-    )
 
-    print(response.choices[0].message.content)
-    # TODO: Design a quiz based on the information you found
-    # Think about the game loop, how to make it more engaging and interactive
+#     print(response.choices[0].message.content)
+#     # TODO: Design a quiz based on the information you found
+#     # Think about the game loop, how to make it more engaging and interactive
 
-# integrate_api_calls_with_gemini(model="gemini-2.5-pro")
+# # integrate_api_calls_with_gemini(model="gemini-2.5-pro")
