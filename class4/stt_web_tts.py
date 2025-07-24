@@ -20,6 +20,42 @@ def wave_file(filename, pcm, channels=1, rate=24000, sample_width=2):
       wf.setframerate(rate)
       wf.writeframes(pcm)
 
+import random
+
+def generate_loading_message(prompt:str, tool_name:str, model:str="gemini-2.5-flash-preview-tts"):
+
+   client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+   if tool_name == 'encyclopedia_search':
+        loading_message = random.choice(['Hmm...searching the web', 'surfing the interwebs', 'pulling up a wikipedia article'])
+   elif tool_name == 'open_link':
+        loading_message = random.choice(['Found a promising lead', 'Double clicking on something I read in an article', 'Following the blue links, till I find the answer'])
+   else:
+        loading_message = 'Ok coming up with a plan to find the answer'
+
+   response = client.models.generate_content(
+      model="gemini-2.5-flash-preview-tts",
+      contents=f"You are providing a loading message. In a youthful and news oriented voice, say: {loading_message} for {prompt}!",
+      config=types.GenerateContentConfig(
+         response_modalities=["AUDIO"],
+         speech_config=types.SpeechConfig(
+            voice_config=types.VoiceConfig(
+               prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                  voice_name='Kore',
+               )
+            )
+         ),
+      )
+   )
+
+   data = response.candidates[0].content.parts[0].inline_data.data
+
+   file_name='out.wav'
+   wave_file(file_name, data) # Saves the file to current directory
+   
+   # Play the audio through speakers using macOS built-in afplay
+   subprocess.Popen(['afplay', file_name])
+
+
 def generate_gemini_response(prompt:str, model:str="gemini-2.5-flash-preview-tts"):
 
    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))

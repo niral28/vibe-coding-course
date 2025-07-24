@@ -10,7 +10,7 @@ load_dotenv()
 from google import genai
 from openai import OpenAI
 
-from stt_web_tts import generate_gemini_response, speech_to_text_gemini, record_audio_with_spacebar
+from stt_web_tts import generate_gemini_response, generate_loading_message, speech_to_text_gemini, record_audio_with_spacebar
 from colorama import Fore, Back, Style
 
 class Step(BaseModel):
@@ -26,7 +26,7 @@ class SearchResult(BaseModel):
     summary: str = Field(description="The answer to the query, and if the answer is not found, extract+summarize any useful information in the text that could provide leads.")
     links: list[str] = Field(default_factory=list, description="List of the top 10 links found in the extracted text, should be in the format of https://en.wikipedia.org/wiki/...")
 
-client = genai.Client()
+
 
 
 import uuid
@@ -43,6 +43,7 @@ def web_search(query):
     response = requests.get(url)
     if response.status_code == 200:
         summary = response.text
+        client = genai.Client()
         response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=f"You are responsible for extracting the answer from the wikipedia article. The query is: {quotedquery}. You must extract the answer from the wikipedia article, do not make up any information. If the answer is not found, return the answer as 'No answer found'. Also return the links to the wikipedia article or any related articles found in the extracted text. The wikipedia article is: {summary}",
@@ -59,6 +60,7 @@ def web_search(query):
         return  f"No articles found for {query}. Status code: {response.status_code}. Try another or rephrase."
 
 def web_open_link(link:str) -> str:
+    client = genai.Client()
     response = requests.get(link)
     if response.status_code == 200:
         summary = response.text
@@ -82,6 +84,7 @@ def chat_turns_to_string(messages:list[dict]):
     return "\n".join([f"{message['role']}: {message['content']}" for message in messages])
 
 def generate_reflection(messages:list[dict]):
+    client = genai.Client()
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=f"You're a deep research assistant but so far you have not been able to find the answer to the user's question. Please reflect on your previous attempts and try a different approach. Come up with several new approaches and return them in a list. Here's the conversation history:\n"+chat_turns_to_string(messages),
@@ -98,6 +101,7 @@ def generate_reflection(messages:list[dict]):
         return "Think step by step and come up with a new approach!"
 
 def generate_search_plan(query:str) -> str:
+    client = genai.Client()
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=f"You're a deep research assistant. The user's question is: {query}. Please generate a search plan for the user's question, think step by step, break down the question into logicial steps and come up with a list of queries to search for the answer to the user's question. Do not make any assumptions, and do not rely on any your knowledge as it is outdated. Think from first principles.",
@@ -113,13 +117,22 @@ def generate_search_plan(query:str) -> str:
     else:
         return "Think step by step!"
 
-def execute_function(tool_name: str, args) -> str:
+from typing import Tuple
+def execute_function(tool_name: str, args) -> Tuple[bool, str]:
+    print(Fore.YELLOW + "Tool call: " + Style.DIM, tool_name, args)
     if tool_name == 'open_link':
-        return web_open_link(args.get('link', ""))
-    if tool_name == 'generate_search_plan':
-        return generate_search_plan(args.get('query', ""))
+        return (False, web_open_link(args.get('link', "")))
+    elif tool_name == 'generate_search_plan':
+        return (False, generate_search_plan(args.get('query', "")))
+    elif tool_name == "encyclopedia_search":
+        query = args.get("query")
+        return (False, f"Query: {query}, Results: {web_search(query)}")
+    elif tool_name == "answer_question":
+        answer = args.get("answer", "")
+        print(Fore.GREEN+"Breaking out of loop, answering question!")
+        return (True, f"{answer}")
     else:
-        return "unknown function called!"
+        return (False, "unknown function called!")
     
 
 
@@ -135,9 +148,6 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
         api_key=os.environ['GEMINI_API_KEY'],
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
     )
-
-
-
     tools = [
         {
             "type": "function",
@@ -286,46 +296,21 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
             for tool_call in tool_calls:
                 tool_call.id = generate_call_id()
                 args = json.loads(tool_call.function.arguments)
-                if tool_call.function.name == "encyclopedia_search":
-                    print(Fore.YELLOW + "Tool call: " + Style.DIM, tool_call)
-                    print(Fore.YELLOW + "Args: " + Style.DIM, args)
-                    if count%2==0 and query_style == "1":
-                        print("Generating response for voice search")
-                        generate_gemini_response(f"Hmm...searching the web for: {query}")
-                    query = args.get("query")
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_call.function.name,
-                        "content": f"Query: {query}, Results: {web_search(query)}"
-                    })
-                elif tool_call.function.name == "answer_question":
-                    answer = args.get("answer", "")
-                    print(Fore.YELLOW + "Tool call: " + Style.DIM, tool_call)
-                    print(Fore.YELLOW + "Args: " + Style.DIM, args)
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_call.function.name,
-                        "content": f"Encyclopedia answer: {answer}"
-                    })
-                    print(Fore.GREEN + "Breaking out of the loop" + Style.DIM)
-                    if query_style == "1":
-                        print("Generating response for voice search")
-                        generate_gemini_response(answer)
+                if count%2==0 and query_style == "1":
+                    print("Generating response for voice search")
+                    if tool_call.function.name != 'answer_question':
+                        generate_loading_message(query, tool_call.function.name)
                     else:
-                        print()
-                        print(Fore.RED + answer + Style.BRIGHT)
-                    print(Fore.BLUE + "Took ", count, "iterations to find the answer" + Style.DIM)
-                    answer_found = True
-                    break
-                elif tool_call.function.name in ["generate_search_plan", "open_link"]:
-                    messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": tool_call.function.name,
-                        "content": execute_function(tool_call.function.name, args)
-                    })
+                        pass
+                answer_found, content = execute_function(tool_call.function.name, args)
+                messages.append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": tool_call.function.name,
+                    "content": content
+                })
+                if answer_found:
+                    break 
         if response.usage:
             print(f'Prompt Tokens:{response.usage.prompt_tokens}')
             input_token_limit = model_info.input_token_limit if model_info.input_token_limit else 0
@@ -335,16 +320,17 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
                 print(f'Removing { messages.pop(1)}')
                 print(f'Removing {messages.pop(1)}')
                 
-
-
         count+=1
 
         print(Fore.BLUE + f"Count: {count}" + Style.DIM)
         print('-'*100)
         print('-'*100)
         if not answer_found:
-            print(Fore.GREEN + str(messages) + Style.DIM)
+            print(Fore.YELLOW + str(messages) + Style.DIM)
         print()
+    print(Fore.GREEN+f'{content}')
+    if query_style == '1':
+           generate_gemini_response(f"Found it!....{content}")
     Style.RESET_ALL
     return messages
 
