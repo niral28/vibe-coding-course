@@ -1,0 +1,9 @@
+Flask==2.3.3
+python-dotenv==1.0.0
+google-genai==0.3.2
+openai==1.51.2
+requests==2.31.0
+pydantic==2.5.0
+colorama==0.4.6
+pynput==1.7.6
+Werkzeug==2.3.7

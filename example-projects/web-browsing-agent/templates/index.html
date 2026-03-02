@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Agent - Encyclopedia Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-search"></i> Encyclopedia Web Agent</h1>
+            <p>Ask me anything and I'll search Wikipedia for you!</p>
+        </div>
+        
+        <div class="chat-container">
+            <div id="chat-messages" class="messages">
+                <div class="message assistant">
+                    <div class="avatar">🤖</div>
+                    <div class="content">
+                        <div class="text">Hello! I'm your encyclopedia search assistant. Ask me any question and I'll search Wikipedia to find the answer for you.</div>
+                        <div class="timestamp"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-row">
+                    <input type="text" id="query-input" placeholder="Ask me anything..." disabled>
+                    <button id="voice-btn" class="voice-btn" title="Hold to record voice">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="send-btn" class="send-btn" title="Send message">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="voice-indicator" id="voice-indicator">
+                    <i class="fas fa-microphone-slash"></i>
+                    <span>Hold the microphone button to record</span>
+                </div>
+                <div class="loading" id="loading" style="display: none;">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Searching encyclopedia...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <h3>Chat History</h3>
+            <div id="session-list"></div>
+            <button id="new-chat-btn" class="new-chat-btn">
+                <i class="fas fa-plus"></i> New Chat
+            </button>
+        </div>
+    </div>
+
+    <!-- Audio elements for voice functionality -->
+    <audio id="response-audio" style="display: none;"></audio>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

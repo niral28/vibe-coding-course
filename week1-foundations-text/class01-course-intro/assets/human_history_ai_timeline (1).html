@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futuristic Space Timeline: Human Evolution to AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: radial-gradient(ellipse at center, #0d1421 0%, #000000 70%);
+            color: #00ffff;
+            overflow-x: hidden;
+            overflow-y: auto;
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Starfield background */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), transparent),
+                radial-gradient(2px 2px at 160px 30px, rgba(255,255,255,0.9), transparent);
+            background-repeat: repeat;
+            background-size: 200px 100px;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px #00ffff); }
+            to { filter: drop-shadow(0 0 30px #ff00ff); }
+        }
+
+        .subtitle {
+            font-size: 1em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hamburger-menu {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.5);
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0,255,255,0.8);
+        }
+
+        .hamburger-line {
+            width: 20px;
+            height: 2px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger-btn.active .hamburger-line:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+
+        .controls {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 20px;
+            padding: 20px 15px;
+            box-shadow: 0 0 30px rgba(0,255,255,0.2);
+            z-index: 999;
+            min-width: 120px;
+            transform: translateX(150px);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .controls.open {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .play-btn {
+            background: linear-gradient(45deg, #00ffff, #0080ff);
+            border: none;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,255,255,0.5);
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 30px rgba(0,255,255,0.8);
+        }
+
+        .speed-control {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #00ffff;
+            text-align: center;
+        }
+
+        .speed-slider {
+            width: 80px;
+            height: 6px;
+            background: rgba(0,255,255,0.3);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #00ffff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .progress-info {
+            color: #888;
+            font-size: 0.8em;
+            text-align: center;
+            max-width: 100px;
+            line-height: 1.3;
+        }
+
+        .event-display {
+            flex: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .event-card {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid rgba(0,255,255,0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0,255,255,0.3);
+            transition: all 0.5s ease;
+            position: relative;
+        }
+
+        .event-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid currentColor;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            transition: all 0.5s ease;
+        }
+
+        .event-icon img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+            opacity: 0.9;
+        }
+
+        .event-icon::before {
+            color: currentColor;
+        }
+
+        .event-card.ai-event .event-icon {
+            color: #ff00ff;
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px rgba(255,0,255,0.4);
+        }
+
+        .event-card.invention-event .event-icon {
+            color: #00ffff;
+            border-color: #00ffff;
+            box-shadow: 0 0 30px rgba(0,255,255,0.4);
+        }
+
+        .event-card.era-event .event-icon {
+            color: #ffff00;
+            border-color: #ffff00;
+            box-shadow: 0 0 30px rgba(255,255,0,0.4);
+        }
+
+        .event-card .year {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffff00;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #ffff00;
+        }
+
+        .event-card .title {
+            font-size: 2em;
+            color: #00ffff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #00ffff;
+        }
+
+        .event-card .description {
+            font-size: 1.2em;
+            color: #ccc;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .event-card.ai-event {
+            border-color: #ff00ff;
+            box-shadow: 0 0 40px rgba(255,0,255,0.4);
+        }
+
+        .event-card.ai-event .title {
+            color: #ff00ff;
+            text-shadow: 0 0 15px #ff00ff;
+        }
+
+        .event-card.invention-event {
+            border-color: #00ffff;
+            box-shadow: 0 0 40px rgba(0,255,255,0.4);
+        }
+
+        .event-card.invention-event .title {
+            color: #00ffff;
+            text-shadow: 0 0 15px #00ffff;
+        }
+
+        .event-card.era-event {
+            border-color: #ffff00;
+            box-shadow: 0 0 40px rgba(255,255,0,0.4);
+        }
+
+        .event-card.era-event .title {
+            color: #ffff00;
+            text-shadow: 0 0 15px #ffff00;
+        }
+
+        .timeline-container {
+            flex: 2;
+            position: relative;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(0,255,255,0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            padding: 40px 20px 20px 20px;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,255,255,0.1);
+            min-height: 250px;
+        }
+
+        .timeline {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        .timeline-track {
+            position: relative;
+            width: 3500px;
+            height: 100%;
+            margin: 0 auto;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            right: 50px;
+            height: 6px;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #96ceb4 75%, 
+                #00ffff 100%);
+            border-radius: 3px;
+            transform: translateY(-50%);
+            box-shadow: 0 0 20px rgba(0,255,255,0.3);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .spaceship {
+            position: absolute;
+            top: 50%;
+            left: 80px;
+            width: 30px;
+            height: 30px;
+            transform: translateY(-50%);
+            z-index: 30;
+            transition: left 1s ease-in-out;
+            cursor: grab;
+            pointer-events: auto;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 0 10px #00ffff) drop-shadow(0 0 20px #ffffff);
+        }
+
+        .spaceship::before {
+            content: '🚀';
+            animation: rocket-glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes rocket-glow {
+            from { 
+                filter: drop-shadow(0 0 5px #00ffff);
+                transform: scale(1);
+            }
+            to { 
+                filter: drop-shadow(0 0 15px #ffffff);
+                transform: scale(1.1);
+            }
+        }
+
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,255,0.3); }
+            50% { box-shadow: 0 0 40px rgba(0,255,255,0.6); }
+        }
+
+        .timeline-item {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: all 0.5s ease;
+            z-index: 5;
+        }
+
+        .timeline-item.active {
+            transform: translateY(-50%) scale(1.3);
+            z-index: 10;
+        }
+
+        .timeline-item.active .timeline-dot {
+            animation: activeGlow 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes activeGlow {
+            from { 
+                box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+                transform: scale(1);
+            }
+            to { 
+                box-shadow: 0 0 40px currentColor, 0 0 80px currentColor;
+                transform: scale(1.2);
+            }
+        }
+
+        .timeline-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid currentColor;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .timeline-item:hover .timeline-icon,
+        .timeline-item.active .timeline-icon {
+            transform: translateX(-50%) scale(1.2);
+            box-shadow: 0 0 20px currentColor;
+        }
+
+        .timeline-icon img {
+            width: 20px;
+            height: 20px;
+            object-fit: cover;
+            border-radius: 4px;
+            opacity: 0.9;
+        }
+
+        .timeline-icon::before {
+            content: attr(data-placeholder);
+            color: currentColor;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .ai-item .timeline-icon {
+            color: #ff00ff;
+        }
+
+        .invention-item .timeline-icon {
+            color: #00ffff;
+        }
+
+        .era-item .timeline-icon {
+            color: #ffff00;
+        }
+
+        .timeline-content {
+            display: none; /* Hide individual popups since we'll show in central area */
+        }
+
+        .timeline-content.above {
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline-content.below {
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timeline-content h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+        }
+
+        .timeline-content .year {
+            font-weight: bold;
+            color: #ffff00;
+            margin-bottom: 8px;
+            text-shadow: 0 0 5px #ffff00;
+        }
+
+        .timeline-content p {
+            color: #ccc;
+        }
+
+        .era-label {
+            position: absolute;
+            top: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: rgba(0,255,255,0.8);
+            text-shadow: 0 0 10px #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ai-item .timeline-dot {
+            border-color: #ff00ff;
+            background: #ff00ff;
+            color: #ff00ff;
+            box-shadow: 0 0 15px #ff00ff;
+        }
+
+        .invention-item .timeline-dot {
+            border-color: #00ffff;
+            background: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 15px #00ffff;
+        }
+
+        .era-item .timeline-dot {
+            border-color: #ffff00;
+            background: #ffff00;
+            color: #ffff00;
+            box-shadow: 0 0 15px #ffff00;
+            width: 22px;
+            height: 22px;
+        }
+
+        .legend {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid rgba(0,255,255,0.4);
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: #ccc;
+        }
+
+        .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        /* Scrollbar styling */
+        .timeline::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .timeline::-webkit-scrollbar-track {
+            background: rgba(0,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-container {
+                height: 400px;
+            }
+            
+            .timeline-content {
+                width: 200px;
+                font-size: 0.85em;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="starfield"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>HUMAN EVOLUTION → AI SINGULARITY</h1>
+            <div class="subtitle">Timeline of Civilization & Artificial Intelligence</div>
+        </div>
+        
+        <div class="hamburger-menu">
+            <button class="hamburger-btn" id="hamburgerBtn">
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
+                <div class="hamburger-line"></div>
+            </button>
+        </div>
+
+        <div class="controls" id="controls">
+            <button class="play-btn" id="playBtn">▶</button>
+            <div class="speed-control">
+                <span>Speed:</span>
+                <input type="range" class="speed-slider" id="speedSlider" min="0.5" max="3" step="0.1" value="1">
+                <span id="speedValue">1x</span>
+            </div>
+            <div class="progress-info">
+                <span id="progressText">Ready to explore</span>
+            </div>
+        </div>
+        
+        <div class="event-display">
+            <div class="event-card" id="eventCard">
+                <div class="event-icon" id="eventIcon">🏹</div>
+                <div class="year" id="eventYear">~300,000 BCE</div>
+                <div class="title" id="eventTitle">Hunter-Gatherers</div>
+                <div class="description" id="eventDescription">Homo sapiens emerge. Small nomadic tribes survive by hunting megafauna and gathering resources across vast territories.</div>
+            </div>
+        </div>
+        
+        <div class="timeline-container">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ffff00; color: #ffff00;"></div>
+                    <span>Human Eras</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #00ffff; color: #00ffff;"></div>
+                    <span>Key Inventions</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ff00ff; color: #ff00ff;"></div>
+                    <span>AI Milestones</span>
+                </div>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-track">
+                    <div class="timeline-line"></div>
+                    <div class="spaceship" id="spaceship"></div>
+                    
+                    <!-- Era Labels -->
+                    <div class="era-label" style="left: 100px;">PREHISTORIC</div>
+                    <div class="era-label" style="left: 450px;">AGRICULTURAL</div>
+                    <div class="era-label" style="left: 900px;">INDUSTRIAL</div>
+                    <div class="era-label" style="left: 1500px;">ELECTRICAL</div>
+                    <div class="era-label" style="left: 2100px;">DIGITAL</div>
+                    <div class="era-label" style="left: 2800px;">AI ERA</div>
+
+                    <!-- Timeline Items -->
+                    <div class="timeline-item era-item" style="left: 80px;" data-index="0">
+                        <div class="timeline-icon" data-placeholder="🏹"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">~300,000 BCE</div>
+                            <h3>Hunter-Gatherers</h3>
+                            <p>Homo sapiens emerge. Small nomadic tribes survive by hunting megafauna and gathering resources across vast territories.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item era-item" style="left: 350px;" data-index="1">
+                        <div class="timeline-icon" data-placeholder="🌾"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">~10,000 BCE</div>
+                            <h3>Agricultural Revolution</h3>
+                            <p>Humans domesticate crops and animals. Permanent settlements emerge, enabling population growth and civilization.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 420px;" data-index="2">
+                        <div class="timeline-icon" data-placeholder="⚙️"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">~3500 BCE</div>
+                            <h3>The Wheel</h3>
+                            <p>Revolutionary circular technology transforms transportation, pottery, and mechanical engineering forever.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 650px;" data-index="3">
+                        <div class="timeline-icon" data-placeholder="📚"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1440 CE</div>
+                            <h3>Printing Press</h3>
+                            <p>Gutenberg's movable type democratizes knowledge, accelerating the spread of ideas across continents.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 780px;" data-index="4">
+                        <div class="timeline-icon" data-placeholder="🚂"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1769</div>
+                            <h3>Steam Engine</h3>
+                            <p>Watt's improved steam engine unleashes mechanical power, triggering the Industrial Revolution.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item era-item" style="left: 850px;" data-index="5">
+                        <div class="timeline-icon" data-placeholder="👨‍🌾"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1860s</div>
+                            <h3>Agricultural Society Peak</h3>
+                            <p>80% of Americans work as farmers during the Civil War era. Manual labor dominates human productivity.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 920px;" data-index="6">
+                        <div class="timeline-icon" data-placeholder="💡"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1879</div>
+                            <h3>Electric Light</h3>
+                            <p>Edison's incandescent bulb illuminates the world, extending productive hours and transforming society.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 980px;" data-index="7">
+                        <div class="timeline-icon" data-placeholder="📞"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1876</div>
+                            <h3>Telephone</h3>
+                            <p>Bell's electromagnetic communication device shrinks global distances instantaneously.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1100px;" data-index="8">
+                        <div class="timeline-icon" data-placeholder="🏢"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1913</div>
+                            <h3>Assembly Line</h3>
+                            <p>Ford's moving production line increases manufacturing efficiency by 8x, enabling mass production.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1300px;" data-index="9">
+                        <div class="timeline-icon" data-placeholder="💻"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1946</div>
+                            <h3>ENIAC Computer</h3>
+                            <p>First general-purpose electronic digital computer. 30 tons of vacuum tubes process 5,000 operations/second.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1350px;" data-index="10">
+                        <div class="timeline-icon" data-placeholder="🔌"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1947</div>
+                            <h3>Transistor</h3>
+                            <p>Bell Labs' semiconductor revolution enables miniaturization of all electronic devices.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 1420px;" data-index="11">
+                        <div class="timeline-icon" data-placeholder="🧠"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1957</div>
+                            <h3>Perceptron</h3>
+                            <p>Rosenblatt's first artificial neural network algorithm mimics biological brain learning.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1550px;" data-index="12">
+                        <div class="timeline-icon" data-placeholder="🌐"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1969</div>
+                            <h3>ARPANET</h3>
+                            <p>First internet message sent between UCLA and Stanford. Digital communication network begins.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1650px;" data-index="13">
+                        <div class="timeline-icon" data-placeholder="🖥️"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1981</div>
+                            <h3>IBM Personal Computer</h3>
+                            <p>Computing power reaches homes and offices. Digital literacy becomes essential.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 1720px;" data-index="14">
+                        <div class="timeline-icon" data-placeholder="🔄"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1986</div>
+                            <h3>Backpropagation</h3>
+                            <p>Algorithm enables training of deep neural networks by propagating errors backward.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item invention-item" style="left: 1800px;" data-index="15">
+                        <div class="timeline-icon" data-placeholder="🌍"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">1991</div>
+                            <h3>World Wide Web</h3>
+                            <p>Berners-Lee creates the web protocol. Global information sharing becomes accessible to all.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 1950px;" data-index="16">
+                        <div class="timeline-icon" data-placeholder="👁️"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">1998</div>
+                            <h3>LeNet (CNNs)</h3>
+                            <p>LeCun's convolutional neural networks achieve breakthrough in computer vision tasks.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2100px;" data-index="17">
+                        <div class="timeline-icon" data-placeholder="🤖"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">2006</div>
+                            <h3>Deep Learning Renaissance</h3>
+                            <p>Hinton's breakthrough in training deep networks sparks the modern AI revolution.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2200px;" data-index="18">
+                        <div class="timeline-icon" data-placeholder="🏆"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">2012</div>
+                            <h3>AlexNet Victory</h3>
+                            <p>Deep CNN wins ImageNet competition by massive margin. Computer vision breakthrough.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2350px;" data-index="19">
+                        <div class="timeline-icon" data-placeholder="🎯"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">2014</div>
+                            <h3>Attention Mechanism</h3>
+                            <p>Bahdanau attention improves machine translation by focusing on relevant input parts.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2500px;" data-index="20">
+                        <div class="timeline-icon" data-placeholder="⚡"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">2017</div>
+                            <h3>Transformer Architecture</h3>
+                            <p>"Attention is All You Need" - Google's transformer enables modern large language models.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2650px;" data-index="21">
+                        <div class="timeline-icon" data-placeholder="📝"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">2018</div>
+                            <h3>GPT-1 Launch</h3>
+                            <p>OpenAI's first Generative Pre-trained Transformer demonstrates unsupervised language learning.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2800px;" data-index="22">
+                        <div class="timeline-icon" data-placeholder="🚀"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">2020</div>
+                            <h3>GPT-3 Emergence</h3>
+                            <p>175 billion parameters achieve human-like text generation. AI capabilities explode exponentially.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item ai-item" style="left: 2950px;" data-index="23">
+                        <div class="timeline-icon" data-placeholder="💬"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content below">
+                            <div class="year">2022</div>
+                            <h3>ChatGPT Launch</h3>
+                            <p>AI assistant reaches 100M users in 2 months. Conversational AI enters mainstream consciousness.</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item era-item" style="left: 3100px;" data-index="24">
+                        <div class="timeline-icon" data-placeholder="🌟"></div>
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content above">
+                            <div class="year">2025</div>
+                            <h3>AI Singularity Approaching</h3>
+                            <p>We stand at the precipice of artificial general intelligence. The future of humanity transforms.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TimelineController {
+            constructor() {
+                this.items = Array.from(document.querySelectorAll('.timeline-item'));
+                this.currentIndex = 0;
+                this.isPlaying = false;
+                this.speed = 1;
+                this.interval = null;
+                
+                this.playBtn = document.getElementById('playBtn');
+                this.speedSlider = document.getElementById('speedSlider');
+                this.speedValue = document.getElementById('speedValue');
+                this.progressText = document.getElementById('progressText');
+                this.timeline = document.querySelector('.timeline');
+                this.spaceship = document.getElementById('spaceship');
+                
+                // Icon placeholders for each event
+                this.eventIcons = [
+                    '🏹', // Hunter-Gatherers
+                    '🌾', // Agricultural Revolution
+                    '⚙️', // The Wheel
+                    '📚', // Printing Press
+                    '🚂', // Steam Engine
+                    '👨‍🌾', // Agricultural Society Peak
+                    '💡', // Electric Light
+                    '📞', // Telephone
+                    '🏢', // Assembly Line
+                    '💻', // ENIAC Computer
+                    '🔌', // Transistor
+                    '🧠', // Perceptron
+                    '🌐', // ARPANET
+                    '🖥️', // IBM Personal Computer
+                    '🔄', // Backpropagation
+                    '🌍', // World Wide Web
+                    '👁️', // LeNet (CNNs)
+                    '🤖', // Deep Learning Renaissance
+                    '🏆', // AlexNet Victory
+                    '🎯', // Attention Mechanism
+                    '⚡', // Transformer Architecture
+                    '📝', // GPT-1 Launch
+                    '🚀', // GPT-3 Emergence
+                    '💬', // ChatGPT Launch
+                    '🌟'  // AI Singularity Approaching
+                ];
+                
+                this.initEvents();
+                this.initHamburgerMenu();
+                this.initSpaceshipDrag();
+                this.updateProgress();
+                this.moveSpaceship();
+            }
+            
+            initEvents() {
+                this.playBtn.addEventListener('click', () => this.togglePlay());
+                this.speedSlider.addEventListener('input', (e) => this.setSpeed(e.target.value));
+                
+                // Click on timeline items
+                this.items.forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        this.goToIndex(index);
+                    });
+                });
+                
+                // Keyboard controls
+                document.addEventListener('keydown', (e) => {
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            this.togglePlay();
+                            break;
+                        case 'ArrowRight':
+                            this.next();
+                            break;
+                        case 'ArrowLeft':
+                            this.previous();
+                            break;
+                    }
+                });
+            }
+            
+            initHamburgerMenu() {
+                const hamburgerBtn = document.getElementById('hamburgerBtn');
+                const controls = document.getElementById('controls');
+                let isOpen = false;
+                
+                hamburgerBtn.addEventListener('click', () => {
+                    isOpen = !isOpen;
+                    hamburgerBtn.classList.toggle('active', isOpen);
+                    controls.classList.toggle('open', isOpen);
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!hamburgerBtn.contains(e.target) && !controls.contains(e.target)) {
+                        isOpen = false;
+                        hamburgerBtn.classList.remove('active');
+                        controls.classList.remove('open');
+                    }
+                });
+            }
+            
+            initSpaceshipDrag() {
+                let isDragging = false;
+                let startX = 0;
+                let spaceshipLeft = 0;
+                
+                this.spaceship.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startX = e.clientX;
+                    // Get computed position or fallback to 80px (initial CSS position)
+                    const computedLeft = window.getComputedStyle(this.spaceship).left;
+                    spaceshipLeft = parseInt(computedLeft) || 80;
+                    this.spaceship.style.cursor = 'grabbing';
+                    this.spaceship.style.transition = 'none'; // Disable transition during drag
+                    e.preventDefault(); // Prevent text selection
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const deltaX = e.clientX - startX;
+                    const newLeft = spaceshipLeft + deltaX;
+                    
+                    // Constrain spaceship to timeline bounds
+                    const minLeft = 50;
+                    const maxLeft = 3400;
+                    const constrainedLeft = Math.max(minLeft, Math.min(maxLeft, newLeft));
+                    
+                    this.spaceship.style.left = constrainedLeft + 'px';
+                    
+                    // Find closest timeline item and update current index
+                    this.findClosestTimelineItem(constrainedLeft);
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        this.spaceship.style.cursor = 'grab';
+                        this.spaceship.style.transition = 'left 1s ease-in-out'; // Re-enable transition
+                    }
+                });
+                
+                // Set initial cursor
+                this.spaceship.style.cursor = 'grab';
+            }
+            
+            findClosestTimelineItem(spaceshipX) {
+                let closestIndex = 0;
+                let closestDistance = Infinity;
+                
+                this.items.forEach((item, index) => {
+                    const itemLeft = parseInt(item.style.left);
+                    const distance = Math.abs(itemLeft - spaceshipX);
+                    
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+                
+                // Update current index and active states
+                if (closestIndex !== this.currentIndex) {
+                    this.currentIndex = closestIndex;
+                    this.updateActiveItem();
+                    this.updateProgress();
+                }
+            }
+            
+            updateActiveItem() {
+                // Remove active class from all items
+                this.items.forEach(item => item.classList.remove('active'));
+                
+                // Add active class to current item
+                const currentItem = this.items[this.currentIndex];
+                currentItem.classList.add('active');
+            }
+            
+            togglePlay() {
+                if (this.isPlaying) {
+                    this.pause();
+                } else {
+                    this.play();
+                }
+            }
+            
+            play() {
+                this.isPlaying = true;
+                this.playBtn.innerHTML = '⏸';
+                this.interval = setInterval(() => {
+                    this.next();
+                }, 2000 / this.speed);
+            }
+            
+            pause() {
+                this.isPlaying = false;
+                this.playBtn.innerHTML = '▶';
+                if (this.interval) {
+                    clearInterval(this.interval);
+                    this.interval = null;
+                }
+            }
+            
+            setSpeed(speed) {
+                this.speed = parseFloat(speed);
+                this.speedValue.textContent = this.speed + 'x';
+                
+                if (this.isPlaying) {
+                    this.pause();
+                    this.play();
+                }
+            }
+            
+            next() {
+                if (this.currentIndex < this.items.length - 1) {
+                    this.currentIndex++;
+                    this.showCurrent();
+                } else {
+                    this.pause();
+                }
+            }
+            
+            previous() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.showCurrent();
+                }
+            }
+            
+            goToIndex(index) {
+                this.currentIndex = index;
+                this.showCurrent();
+            }
+            
+            showCurrent() {
+                // Remove active class from all items
+                this.items.forEach(item => item.classList.remove('active'));
+                
+                // Add active class to current item
+                const currentItem = this.items[this.currentIndex];
+                currentItem.classList.add('active');
+                
+                // Move spaceship to current item
+                this.moveSpaceship();
+                
+                // Scroll to current item
+                const itemLeft = parseInt(currentItem.style.left);
+                const timelineWidth = this.timeline.offsetWidth;
+                const scrollLeft = Math.max(0, itemLeft - timelineWidth / 2);
+                
+                this.timeline.scrollTo({
+                    left: scrollLeft,
+                    behavior: 'smooth'
+                });
+                
+                this.updateProgress();
+            }
+            
+            moveSpaceship() {
+                const currentItem = this.items[this.currentIndex];
+                const itemLeft = parseInt(currentItem.style.left);
+                // Position spaceship at the timeline item location
+                this.spaceship.style.left = itemLeft + 'px';
+            }
+            
+            updateProgress() {
+                const current = this.currentIndex + 1;
+                const total = this.items.length;
+                const currentItem = this.items[this.currentIndex];
+                const title = currentItem.querySelector('h3').textContent;
+                const year = currentItem.querySelector('.year').textContent;
+                
+                this.progressText.innerHTML = `<strong>${current}/${total}</strong> - ${year} - ${title}`;
+                
+                // Update the central event display
+                this.updateEventDisplay();
+            }
+            
+            updateEventDisplay() {
+                const currentItem = this.items[this.currentIndex];
+                const year = currentItem.querySelector('.year').textContent;
+                const title = currentItem.querySelector('h3').textContent;
+                const description = currentItem.querySelector('p').textContent;
+                
+                document.getElementById('eventYear').textContent = year;
+                document.getElementById('eventTitle').textContent = title;
+                document.getElementById('eventDescription').textContent = description;
+                
+                // Update the icon
+                const eventIcon = document.getElementById('eventIcon');
+                eventIcon.textContent = this.eventIcons[this.currentIndex];
+                
+                // Add color coding based on item type
+                const eventCard = document.getElementById('eventCard');
+                eventCard.classList.remove('ai-event', 'invention-event', 'era-event');
+                
+                if (currentItem.classList.contains('ai-item')) {
+                    eventCard.classList.add('ai-event');
+                } else if (currentItem.classList.contains('invention-item')) {
+                    eventCard.classList.add('invention-event');
+                } else if (currentItem.classList.contains('era-item')) {
+                    eventCard.classList.add('era-event');
+                }
+            }
+        }
+        
+        // Initialize the timeline controller when page loads
+        window.addEventListener('load', () => {
+            new TimelineController();
+        });
+
+        
+        // Add some dynamic starfield animation
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.style.position = 'fixed';
+            star.style.width = '2px';
+            star.style.height = '2px';
+            star.style.background = '#fff';
+            star.style.borderRadius = '50%';
+            star.style.top = Math.random() * window.innerHeight + 'px';
+            star.style.left = '-10px';
+            star.style.zIndex = '-1';
+            star.style.opacity = '0';
+            
+            document.body.appendChild(star);
+            
+            star.animate([
+                { left: '-10px', opacity: 1 },
+                { left: window.innerWidth + 'px', opacity: 0 }
+            ], {
+                duration: 3000,
+                easing: 'linear'
+            }).onfinish = () => {
+                star.remove();
+            };
+        }
+        
+        // Create shooting stars periodically
+        setInterval(createShootingStar, 5000);
+    </script>
+</body>
+</html> 
