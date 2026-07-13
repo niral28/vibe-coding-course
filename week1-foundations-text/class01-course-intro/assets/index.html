@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LLM Capabilities vs Job Automation — Pareto Analysis (2026)</title>
+<meta name="description" content="An interactive look at where large language models sit relative to job automation potential, updated with mid-2026 frontier and open-weight models and the latest Anthropic Economic Index." />
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --accent: #4f46e5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 56px; }
+  header h1 {
+    font-size: 30px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 8px;
+  }
+  header p.sub { color: var(--muted); margin: 0 0 4px; max-width: 900px; }
+  .stamp { color: var(--muted); font-size: 13px; margin-top: 6px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 8px; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    padding: 9px 16px; border-radius: 9px; border: 1px solid var(--line);
+    background: #eef2ff; color: #3730a3; transition: all .15s ease;
+  }
+  button:hover { transform: translateY(-1px); }
+  button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.toggle { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  button.toggle.off { background: #f3f4f6; color: #6b7280; border-color: var(--line); }
+  .chart-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 12px 8px 4px; margin-top: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  }
+  #chart { width: 100%; height: 560px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px; margin-top: 24px;
+  }
+  .panel {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
+  }
+  .panel h3 { margin: 0 0 12px; font-size: 17px; }
+  .panel ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .panel li { margin-bottom: 9px; }
+  .panel.method { grid-column: 1 / -1; background: #eef2ff; border-color: #c7d2fe; }
+  .panel.method p { font-size: 13.5px; color: #374151; margin: 0 0 10px; }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
+  .swatch { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .dia { width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; }
+  a { color: var(--accent); }
+  .footer { color: var(--muted); font-size: 12.5px; margin-top: 28px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>LLM Capabilities vs Job Automation: Pareto Analysis</h1>
+    <p class="sub">
+      How mid-2026 frontier and open-weight language models stack up against the automation potential of real
+      occupations. The Pareto frontier highlights jobs with the highest automation potential relative to what
+      today's models can actually do.
+    </p>
+    <p class="stamp">Updated July 2026 · Model landscape as of mid-2026 · Occupation framing based on the
+      <a href="https://www.anthropic.com/research/economic-index-june-2026-report" target="_blank" rel="noopener">Anthropic Economic Index</a>.</p>
+  </header>
+
+  <div class="controls">
+    <button id="btn-pareto" class="active" onclick="setView('pareto')">Pareto Frontier View</button>
+    <button id="btn-gap" onclick="setView('gap')">Current Usage vs Potential</button>
+    <button id="btn-models" class="toggle" onclick="toggleModels()">Hide LLM Models</button>
+  </div>
+
+  <div class="chart-card">
+    <div id="chart"></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <h3>Key Insights from the Anthropic Economic Index (2026)</h3>
+      <ul>
+        <li><strong>Augmentation is back on top (52% vs 45%):</strong> after automation briefly led in mid-2025, collaborative "thinking-partner" use again dominates automated hand-offs on Claude.ai.</li>
+        <li><strong>The agentic shift:</strong> long-running tasks via Claude Code and Cowork now rival chat; 54% of those coding sessions run on the most capable models.</li>
+        <li><strong>Workers expect a rising tide:</strong> over 1 in 3 survey respondents expect AI to do most or nearly all of their work tasks within 12 months.</li>
+        <li><strong>Coding still leads:</strong> computer &amp; mathematical tasks make up ~30% of heavy Claude usage — far above their ~4% share of US employment.</li>
+        <li><strong>Delegators are optimistic:</strong> heavier automation users report the most positive expectations for pay, job security, and skill value (57% say AI makes their skills more valuable).</li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h3>How to Read This Chart</h3>
+      <div style="font-size:14px;">
+        <p style="margin:0 0 12px;"><strong>Jobs (circles):</strong> automation potential vs how well current LLMs match the required capabilities. Color = displacement risk profile.</p>
+        <div class="legend-row"><span class="swatch" style="background:#ef4444"></span><span><strong>High Risk</strong> — routine knowledge work (data entry, translation, basic copy)</span></div>
+        <div class="legend-row"><span class="swatch" style="background:#f59e0b"></span><span><strong>Medium Risk</strong> — analytical &amp; support roles (paralegals, analysts, junior devs)</span></div>
+        <div class="legend-row"><span class="swatch" style="background:#3b82f6"></span><span><strong>Augmentation</strong> — expert roles AI assists but rarely replaces (engineers, physicians, lawyers)</span></div>
+        <div class="legend-row"><span class="swatch" style="background:#10b981"></span><span><strong>Low Risk</strong> — physical / hands-on / high-touch work (nurses, electricians, chefs)</span></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:12px 0;">
+        <p style="margin:0 0 10px;"><strong>Models (diamonds):</strong></p>
+        <div class="legend-row"><span class="dia" style="border-bottom:12px solid #7c3aed"></span><span><strong>Frontier:</strong> Claude Fable 5, Claude Opus 4.8, Gemini 3.1 Pro, GPT-5.5, Grok 4.3</span></div>
+        <div class="legend-row"><span class="dia" style="border-bottom:12px solid #0891b2"></span><span><strong>Value / Efficient:</strong> Claude Sonnet 5, Gemini 3.5 Flash, Grok 4.1 Fast</span></div>
+        <div class="legend-row"><span class="dia" style="border-bottom:12px solid #ea580c"></span><span><strong>Open-Weight:</strong> DeepSeek V3.2, Qwen3-235B, Kimi K2, Llama 4, Mistral Large</span></div>
+      </div>
+    </div>
+
+    <div class="panel method">
+      <h3>Methodology &amp; Data Sources</h3>
+      <p>
+        Occupation framing draws on Anthropic's Economic Index, which maps millions of Claude conversations onto
+        O*NET/BLS occupational tasks to estimate <em>observed exposure</em> (tasks already done with AI) versus
+        <em>theoretical exposure</em> (tasks an LLM could plausibly do). The "Current Usage vs Potential" view
+        illustrates the gap between what AI is already used for and its estimated ceiling per occupation cluster.
+      </p>
+      <p>
+        <strong>Model positioning:</strong> frontier and open-weight models are placed using mid-2026 capability
+        signals (Artificial Analysis Intelligence Index, SWE-bench / GPQA-style benchmarks, and public leaderboards).
+        The top of the field is extremely tight — Claude Fable 5, Claude Opus 4.8, Gemini 3.1 Pro, GPT-5.5 and Grok
+        4.3 sit within a few points of one another, while open-weight models (DeepSeek, Qwen3, Kimi K2, Llama 4)
+        now reach roughly 85–95% of frontier capability at a fraction of the cost.
+      </p>
+      <p style="color:#6b7280;">
+        This is a teaching illustration for an introductory AI course. Individual job coordinates are informed
+        estimates meant to convey the shape of the landscape, not precise measurements. Benchmarks and rankings
+        shift monthly.
+      </p>
+    </div>
+  </div>
+
+  <p class="footer">Built for an introductory AI course · rendered with Plotly.js · deployable as a static page on GitHub Pages.</p>
+</div>
+
+<script>
+/* ---------------------- DATA ---------------------- */
+// Jobs: x = LLM capability match (%), y = automation potential (%), usage = current observed AI usage (%)
+const jobs = [
+  // High Risk (red)
+  { name: "Data Entry Keyers",            x: 90, y: 92, usage: 42, cat: "High Risk" },
+  { name: "Translators & Interpreters",   x: 88, y: 85, usage: 46, cat: "High Risk" },
+  { name: "Proofreaders",                 x: 87, y: 84, usage: 34, cat: "High Risk" },
+  { name: "SEO / Basic Copywriters",      x: 85, y: 80, usage: 52, cat: "High Risk" },
+  { name: "Bookkeeping Clerks",           x: 82, y: 79, usage: 36, cat: "High Risk" },
+  { name: "Telemarketers",                x: 80, y: 82, usage: 22, cat: "High Risk" },
+  { name: "Customer Service Reps",        x: 78, y: 76, usage: 40, cat: "High Risk" },
+
+  // Medium Risk (orange)
+  { name: "Junior Software Developers",   x: 84, y: 60, usage: 62, cat: "Medium Risk" },
+  { name: "Technical Writers",            x: 78, y: 62, usage: 47, cat: "Medium Risk" },
+  { name: "Market Research Analysts",     x: 74, y: 58, usage: 41, cat: "Medium Risk" },
+  { name: "Paralegals & Legal Assistants",x: 72, y: 61, usage: 33, cat: "Medium Risk" },
+  { name: "Financial Analysts",           x: 70, y: 55, usage: 43, cat: "Medium Risk" },
+  { name: "Graphic Designers",            x: 68, y: 52, usage: 45, cat: "Medium Risk" },
+  { name: "Accountants & Auditors",       x: 66, y: 54, usage: 31, cat: "Medium Risk" },
+
+  // Augmentation (blue)
+  { name: "Software Engineers",           x: 83, y: 46, usage: 66, cat: "Augmentation" },
+  { name: "Research Scientists",          x: 71, y: 34, usage: 39, cat: "Augmentation" },
+  { name: "Lawyers",                      x: 68, y: 31, usage: 29, cat: "Augmentation" },
+  { name: "Management Consultants",       x: 66, y: 36, usage: 35, cat: "Augmentation" },
+  { name: "Marketing Managers",           x: 64, y: 38, usage: 40, cat: "Augmentation" },
+  { name: "Physicians",                   x: 60, y: 23, usage: 21, cat: "Augmentation" },
+  { name: "Teachers & Educators",         x: 58, y: 28, usage: 31, cat: "Augmentation" },
+
+  // Low Risk (green)
+  { name: "Physical Therapists",          x: 32, y: 13, usage: 10, cat: "Low Risk" },
+  { name: "Registered Nurses",            x: 30, y: 15, usage: 12, cat: "Low Risk" },
+  { name: "Chefs & Cooks",                x: 28, y: 14, usage: 9,  cat: "Low Risk" },
+  { name: "Home Health Aides",            x: 26, y: 11, usage: 6,  cat: "Low Risk" },
+  { name: "Childcare Workers",            x: 25, y: 9,  usage: 7,  cat: "Low Risk" },
+  { name: "Electricians",                 x: 22, y: 11, usage: 8,  cat: "Low Risk" },
+  { name: "Plumbers",                     x: 21, y: 9,  usage: 5,  cat: "Low Risk" },
+  { name: "Construction Laborers",        x: 20, y: 12, usage: 6,  cat: "Low Risk" },
+];
+
+// Models: x = capability score, y = automation-enablement (how much they unlock hands-off work)
+const models = [
+  // Frontier
+  { name: "Claude Fable 5",   x: 99, y: 97, group: "Frontier" },
+  { name: "Claude Opus 4.8",  x: 96, y: 94, group: "Frontier" },
+  { name: "Gemini 3.1 Pro",   x: 95, y: 92, group: "Frontier" },
+  { name: "GPT-5.5",          x: 94, y: 91, group: "Frontier" },
+  { name: "Grok 4.3",         x: 92, y: 89, group: "Frontier" },
+  // Value / Efficient
+  { name: "Claude Sonnet 5",  x: 90, y: 88, group: "Value / Efficient" },
+  { name: "Gemini 3.5 Flash", x: 88, y: 86, group: "Value / Efficient" },
+  { name: "Grok 4.1 Fast",    x: 84, y: 83, group: "Value / Efficient" },
+  // Open-Weight
+  { name: "DeepSeek V3.2",    x: 89, y: 87, group: "Open-Weight" },
+  { name: "Qwen3-235B",       x: 87, y: 85, group: "Open-Weight" },
+  { name: "Kimi K2",          x: 86, y: 84, group: "Open-Weight" },
+  { name: "Llama 4",          x: 83, y: 82, group: "Open-Weight" },
+  { name: "Mistral Large 3",  x: 80, y: 80, group: "Open-Weight" },
+];
+
+const catColors = {
+  "High Risk": "#ef4444",
+  "Medium Risk": "#f59e0b",
+  "Augmentation": "#3b82f6",
+  "Low Risk": "#10b981",
+};
+const modelColors = {
+  "Frontier": "#7c3aed",
+  "Value / Efficient": "#0891b2",
+  "Open-Weight": "#ea580c",
+};
+
+/* ---------------------- STATE ---------------------- */
+let state = { view: "pareto", showModels: true };
+
+/* ---------------------- HELPERS ---------------------- */
+function paretoFrontier(points) {
+  // upper-right non-dominated set: no other point has both higher x AND higher y
+  const nd = points.filter(p =>
+    !points.some(q => q !== p && q.x >= p.x && q.y >= p.y && (q.x > p.x || q.y > p.y))
+  );
+  return nd.sort((a, b) => a.x - b.x);
+}
+
+function jobScatter() {
+  const traces = Object.keys(catColors).map(cat => {
+    const pts = jobs.filter(j => j.cat === cat);
+    return {
+      type: "scatter", mode: "markers", name: cat,
+      x: pts.map(p => p.x), y: pts.map(p => p.y),
+      text: pts.map(p => p.name),
+      marker: { size: 12, color: catColors[cat], line: { width: 1, color: "#fff" }, opacity: 0.9 },
+      hovertemplate: "<b>%{text}</b><br>Capability match: %{x}%<br>Automation potential: %{y}%<extra>" + cat + "</extra>",
+    };
+  });
+
+  const fr = paretoFrontier(jobs);
+  traces.push({
+    type: "scatter", mode: "lines", name: "Pareto Frontier",
+    x: fr.map(p => p.x), y: fr.map(p => p.y),
+    line: { color: "#9ca3af", width: 2, dash: "dot" },
+    hoverinfo: "skip",
+  });
+  return traces;
+}
+
+function modelScatter() {
+  return Object.keys(modelColors).map(group => {
+    const pts = models.filter(m => m.group === group);
+    return {
+      type: "scatter", mode: "markers", name: group + " Models",
+      x: pts.map(p => p.x), y: pts.map(p => p.y),
+      text: pts.map(p => p.name),
+      marker: { symbol: "diamond", size: 14, color: modelColors[group], line: { width: 1.5, color: "#fff" } },
+      hovertemplate: "<b>%{text}</b><br>Capability: %{x}<br>Automation enablement: %{y}<extra>" + group + "</extra>",
+    };
+  });
+}
+
+function renderPareto() {
+  let data = jobScatter();
+  if (state.showModels) data = data.concat(modelScatter());
+
+  const layout = {
+    margin: { l: 70, r: 24, t: 20, b: 60 },
+    height: 560,
+    xaxis: { title: "LLM Capability Match (%)", range: [0, 105], gridcolor: "#eef2f7", zeroline: false },
+    yaxis: { title: "Automation Potential (%)", range: [0, 105], gridcolor: "#eef2f7", zeroline: false },
+    legend: { orientation: "h", y: -0.16, x: 0.5, xanchor: "center" },
+    hovermode: "closest",
+    plot_bgcolor: "#ffffff", paper_bgcolor: "#ffffff",
+    shapes: [
+      { type: "line", x0: 50, x1: 50, y0: 0, y1: 105, line: { color: "#cbd5e1", width: 1, dash: "dash" } },
+      { type: "line", x0: 0, x1: 105, y0: 50, y1: 50, line: { color: "#cbd5e1", width: 1, dash: "dash" } },
+    ],
+    annotations: [
+      { x: 95, y: 100, text: "High capability · High automation", showarrow: false, font: { size: 11, color: "#94a3b8" }, xanchor: "right" },
+      { x: 3, y: 3, text: "Low capability · Low automation", showarrow: false, font: { size: 11, color: "#94a3b8" }, xanchor: "left" },
+    ],
+  };
+  Plotly.react("chart", data, layout, { responsive: true, displayModeBar: false });
+}
+
+function renderGap() {
+  // occupation clusters: current observed usage vs automation potential
+  const clusters = [
+    { name: "Computer & Mathematical", usage: 62, potential: 78 },
+    { name: "Office & Administrative", usage: 40, potential: 82 },
+    { name: "Business & Financial",    usage: 43, potential: 66 },
+    { name: "Legal",                   usage: 31, potential: 58 },
+    { name: "Arts, Design & Media",    usage: 48, potential: 62 },
+    { name: "Sales & Marketing",       usage: 41, potential: 60 },
+    { name: "Education & Training",    usage: 31, potential: 45 },
+    { name: "Healthcare Practitioners",usage: 21, potential: 34 },
+    { name: "Personal Care & Service", usage: 12, potential: 22 },
+    { name: "Construction & Trades",   usage: 8,  potential: 15 },
+  ].sort((a, b) => a.potential - b.potential);
+
+  const y = clusters.map(c => c.name);
+  const data = [
+    {
+      type: "bar", orientation: "h", name: "Automation Potential (theoretical)",
+      y, x: clusters.map(c => c.potential),
+      marker: { color: "#c7d2fe" },
+      hovertemplate: "<b>%{y}</b><br>Automation potential: %{x}%<extra></extra>",
+    },
+    {
+      type: "bar", orientation: "h", name: "Current AI Usage (observed)",
+      y, x: clusters.map(c => c.usage),
+      marker: { color: "#4f46e5" },
+      hovertemplate: "<b>%{y}</b><br>Current AI usage: %{x}%<extra></extra>",
+    },
+  ];
+  const layout = {
+    barmode: "overlay",
+    margin: { l: 180, r: 24, t: 20, b: 50 },
+    height: 560,
+    xaxis: { title: "Share of tasks (%)", range: [0, 100], gridcolor: "#eef2f7" },
+    yaxis: { automargin: true },
+    legend: { orientation: "h", y: -0.12, x: 0.5, xanchor: "center" },
+    bargap: 0.35,
+    plot_bgcolor: "#ffffff", paper_bgcolor: "#ffffff",
+  };
+  Plotly.react("chart", data, layout, { responsive: true, displayModeBar: false });
+}
+
+function render() {
+  if (state.view === "pareto") renderPareto();
+  else renderGap();
+}
+
+/* ---------------------- CONTROLS ---------------------- */
+function setView(v) {
+  state.view = v;
+  document.getElementById("btn-pareto").classList.toggle("active", v === "pareto");
+  document.getElementById("btn-gap").classList.toggle("active", v === "gap");
+  document.getElementById("btn-models").style.display = (v === "pareto") ? "" : "none";
+  render();
+}
+function toggleModels() {
+  state.showModels = !state.showModels;
+  const b = document.getElementById("btn-models");
+  b.textContent = state.showModels ? "Hide LLM Models" : "Show LLM Models";
+  b.classList.toggle("off", !state.showModels);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
