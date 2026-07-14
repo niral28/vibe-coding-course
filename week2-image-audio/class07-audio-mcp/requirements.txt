@@ -1,8 +1,0 @@
-google-genai
-librosa
-soundfile
-sounddevice
-numpy
-pynput
-pygame
-python-dotenv

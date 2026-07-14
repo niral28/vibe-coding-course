@@ -1,0 +1,42 @@
+[project]
+name = "vibe-coding-course"
+version = "0.1.0"
+description = "GSET Vibe Coding: AI Remix — course materials, notebooks, and example projects."
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+
+# All course dependencies live here and are managed by uv.
+# Add a new package with:  uv add <package-name>
+dependencies = [
+    # --- Core AI / API ---
+    "google-genai>=1.47.0",   # Google Gemini SDK (from google import genai)
+    "openai>=1.93.0",         # Used for the Gemini OpenAI-compatible endpoint
+    "python-dotenv>=1.1.1",   # Loads your GEMINI_API_KEY from a .env file
+    "requests>=2.32.4",       # Simple HTTP calls (e.g. Wikipedia)
+    "pydantic>=2.5.0",        # Structured/validated model outputs
+
+    # --- Web app projects (Wordle web, web-browsing agent) ---
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+    "websockets>=12.0",
+    "colorama>=0.4.6",
+    "pynput>=1.7.6",
+
+    # --- Notebooks & data ---
+    "jupyter>=1.0.0",
+    "ipykernel>=6.29.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "pillow>=10.0.0",
+
+    # --- Week 2: image & audio ---
+    "soundfile>=0.12.0",
+    "sounddevice>=0.4.6",
+    "librosa>=0.10.0",
+    "pygame>=2.5.0",
+]
+
+# This repo is a collection of scripts/notebooks, not an installable library,
+# so tell uv not to try to build it as a package.
+[tool.uv]
+package = false

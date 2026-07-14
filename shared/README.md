@@ -135,18 +135,23 @@ api_key = os.getenv("GEMINI_API_KEY")
 
 ### Making API Calls
 ```python
-import google.generativeai as genai
+from google import genai
 
-# Configure API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# The client reads the API key from the GEMINI_API_KEY environment variable
+client = genai.Client()
 
-# Create model
-model = genai.GenerativeModel('gemini-2.0-flash-exp')
-
-# Generate response
-response = model.generate_content("Hello, AI!")
+# Generate response (see https://ai.google.dev/gemini-api/docs/models for model IDs)
+response = client.models.generate_content(
+    model="gemini-3.5-flash",
+    contents="Hello, AI!",
+)
 print(response.text)
 ```
+
+> Note: The older `google.generativeai` package and `genai.GenerativeModel(...)` pattern
+> are deprecated. Use the `google-genai` SDK (`from google import genai`) shown above.
+> For Gemini 3.x, avoid setting `temperature`/`top_p`/`top_k` and use `thinking_level`
+> (minimal | low | medium | high) instead of the old numeric `thinking_budget`.
 
 ---
 

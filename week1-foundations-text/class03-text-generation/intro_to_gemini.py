@@ -11,24 +11,29 @@ load_dotenv()
 
 from google import genai
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
-def generate_gemini_response(prompt:str, model:str="gemini-2.5-flash"):
+def generate_gemini_response(prompt:str, model:str="gemini-3.5-flash"):
     client = genai.Client()
 
     response = client.models.generate_content(
         model=model, contents=prompt
     )
+    # Gemini 3.x controls reasoning depth with `thinking_level` (minimal | low | medium | high),
+    # which replaces the older numeric `thinking_budget`. The default is "medium"; use "high" for
+    # hard reasoning/math/coding, or "low"/"minimal" for faster, cheaper replies. On google-genai
+    # v2.0.0+ you can pass it like this:
+    #     config={"thinking_config": {"thinking_level": "high"}}
     print(response.text, model)
 
 
 # Feel free to change the prompt and model to see how the response changes!
 # Models listed at: https://ai.google.dev/gemini-api/docs/models
-# generate_gemini_response("Who's the president of the United States?", model="gemini-2.5-flash")
+# generate_gemini_response("Who's the president of the United States?", model="gemini-3.5-flash")
 
 # Ok now that we've got the basics down, let's start building some more complex programs!
 
 from openai import OpenAI
 # An interactive chatbot!
-def chat_with_gemini(max_user_turns:int = 5, model:str="gemini-2.5-flash"):
+def chat_with_gemini(max_user_turns:int = 5, model:str="gemini-3.5-flash"):
 
     # Initialize the messages list with the system prompt
     messages=[
@@ -42,10 +47,12 @@ def chat_with_gemini(max_user_turns:int = 5, model:str="gemini-2.5-flash"):
     )
     print("Let's chat with Gemini!")
     print(messages)
+    # Note (Gemini 3.x): temperature/top_p/top_k are no longer recommended. Gemini 3.x
+    # reasoning is tuned for the defaults, so we omit them. For deterministic behavior,
+    # steer the model with a clear system instruction instead.
     response = client.chat.completions.create(
         model=model,
         messages=messages,
-        temperature=0.0 # 0.0 is the most deterministic response, 1.0 is the most random
     )
     print(f'Assistant: {response.choices[0].message.content}')
 
@@ -81,7 +88,7 @@ def chat_with_gemini(max_user_turns:int = 5, model:str="gemini-2.5-flash"):
         )
         print(f'Assistant: {response.choices[0].message.content}')
     print(messages)
-# chat_with_gemini(max_user_turns=2, model="gemini-2.5-flash")
+# chat_with_gemini(max_user_turns=2, model="gemini-3.5-flash")
 
 
 
@@ -100,7 +107,7 @@ def get_user_input():
 
 # This is a simple Wordle game that the user plays via chat.
 # Extension ideas: Implement a get_hint_function, get_word_of_the_day_function, validate_word_function, etc.
-def chat_with_gemini_function_calling(max_user_turns:int = 5, model:str="gemini-2.5-pro"):
+def chat_with_gemini_function_calling(max_user_turns:int = 5, model:str="gemini-3.5-flash"):
     messages = [
             {"role": "system", "content": "You are a Wordle game that the user plays via chat. Call get_user_input() when you need the user's guess. Note the user may quit the game by typing in 'q'. You handle all game logic including tracking guesses, checking letters, and providing feedback. Each round the system will validate the guess and give them the hint (using color emojis, green corresponds to letter in correct position, yellow corresponds to letter in incorrect position, and gray corresponds to letter not in the word) that you should display."},
             {"role": "user", "content": "[system] Start a new Wordle game"},
@@ -119,7 +126,6 @@ def chat_with_gemini_function_calling(max_user_turns:int = 5, model:str="gemini-
             response = client.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.0,
                 tools=[
                     {
                         "type": "function",
@@ -221,7 +227,7 @@ def chat_with_gemini_function_calling(max_user_turns:int = 5, model:str="gemini-
     
     print("Game session ended")
 
-# chat_with_gemini_function_calling(max_user_turns=3, model="gemini-2.5-flash")
+# chat_with_gemini_function_calling(max_user_turns=3, model="gemini-3.5-flash")
 
 import random
 def get_word_of_the_day(filename):
@@ -265,7 +271,7 @@ def generate_call_id(prefix="call_"):
 
 # RAG with Gemini
 # Extension ideas: Implement a get_hint_function, structured to show correct letters in the word, and incorrect letters in the word.
-def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:str="wordle.txt", model:str="gemini-2.5-flash"):
+def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:str="wordle.txt", model:str="gemini-3.5-flash"):
     word_of_the_day = get_word_of_the_day(filename)
     print(f"Word of the day: {word_of_the_day}")
 
@@ -288,7 +294,6 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
             response = client.chat.completions.create(
                 model=model,
                 messages=messages,
-                temperature=0.0,
                 tools=[
                     {
                         "type": "function",
@@ -451,7 +456,7 @@ def chat_with_gemini_function_calling_with_rag(max_user_turns:int = 5, filename:
     print("Game session ended")
 
 
-# chat_with_gemini_function_calling_with_rag(max_user_turns=3, filename="wordle.txt", model="gemini-2.5-pro")
+# chat_with_gemini_function_calling_with_rag(max_user_turns=3, filename="wordle.txt", model="gemini-3.5-flash")
 
 import requests
 from pydantic import BaseModel
@@ -477,7 +482,7 @@ def search_wikipedia(query):
     if response.status_code == 200:
         summary = response.text
         response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You are responsible for extracting the answer from the wikipedia article. The query is: {query}. You must extract the answer from the wikipedia article, do not make up any information. If the answer is not found, return the answer as 'No answer found'. Also return the links to the wikipedia article or any related articles found in the extracted text. The wikipedia article is: {summary}",
         config={
             "response_mime_type": "application/json",
@@ -492,7 +497,7 @@ def search_wikipedia(query):
 
 def generate_reflection(messages:list[dict]):
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You're a deep research assistant but so far you have not been able to find the answer to the user's question. Please reflect on your previous attempts and try a different approach. Come up with several new approaches and return them in a list.",
         config={
             "response_mime_type": "application/json",
@@ -508,7 +513,7 @@ def generate_reflection(messages:list[dict]):
 
 
 from datetime import datetime
-def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations:int=5):
+def integrate_api_calls_with_gemini(model:str="gemini-3.5-flash", max_iterations:int=5):
     query = input("Enter a query: ")
     messages = [
             {"role": "system", "content": f"You are a helpful assistant that can search wikipedia for variety of facts and figures. DO NOT rely on your own knowledge to answer any question, it is all outdated. Take a deep breath, before you call the tools break down the query and explain your thoughts, what are the keywords you are going to use to search the wikipedia article. If the user asks you a question and the answer is not found try rephrasing the question and searching again. You may run parallel tool calls to search for the answer."},
@@ -580,7 +585,6 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
                 }
                 },
                 ],
-                temperature=0.0,
                 tool_choice="required"
             )
         else:
@@ -588,7 +592,6 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
                 model=model,
                 messages=messages,
                 tools=tools,
-                temperature=0.0,
                 tool_choice="auto"
             )
             
@@ -664,4 +667,4 @@ def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations
         print(messages)
         print()
 
-integrate_api_calls_with_gemini(model="gemini-2.5-pro")
+integrate_api_calls_with_gemini(model="gemini-3.5-flash")

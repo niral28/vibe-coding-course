@@ -189,7 +189,7 @@ from google import genai
 client = genai.Client()
 
 response = client.models.generate_content(
-    model="gemini-2.5-flash", contents="Tell me a good joke about vibe coders!"
+    model="gemini-3.5-flash", contents="Tell me a good joke about vibe coders!"
 )
 print(response.text)
 
@@ -212,7 +212,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {
@@ -253,7 +253,7 @@ def chat_with_gemini(max_user_turns:int = 5):
             else:
                 print('Please provide a valid message (cannot be empty)')
         response = client.chat.completions.create(
-            model="gemini-2.5-flash",
+            model="gemini-3.5-flash",
             messages=messages
         )
         count+=1

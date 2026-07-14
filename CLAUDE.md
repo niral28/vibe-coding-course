@@ -9,13 +9,14 @@ This is a vibe coding course repository focused on teaching Python programming a
 ## Setup and Environment
 
 **Python Environment:**
-- Use conda to manage Python environments
-- Create environment: `conda create -n gemini-project python=3.11`
-- Activate environment: `conda activate gemini-project`
-- Install dependencies: `pip install -r class1/requirements.txt`
+- Dependencies are managed with `uv` via the root `pyproject.toml` (single source of truth).
+- Install everything: `uv sync`
+- Run any script/command in the environment: `uv run python <path/to/script.py>`
+- Add or remove a package: `uv add <pkg>` / `uv remove <pkg>` (never hand-edit `uv.lock`).
+- `pyproject.toml` and `uv.lock` are committed; do not delete them.
 
 **Required Environment Variables:**
-- `GEMINI_API_KEY`: Google Gemini API key (stored in class1/.env)
+- `GEMINI_API_KEY`: Google Gemini API key (copy `shared/.env.example` to `.env` at the repo root)
 
 ## Code Architecture
 
