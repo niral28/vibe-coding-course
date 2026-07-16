@@ -39,7 +39,7 @@ def generate_gemini_response(prompt: str, model: str = "gemini-2.5-flash-preview
     
     return file_name
 
-def speech_to_text_gemini(audio_file_path: str, model: str = "gemini-2.5-flash") -> str:
+def speech_to_text_gemini(audio_file_path: str, model: str = "gemini-3.5-flash") -> str:
     """
     Convert audio file to text using Gemini 2.5 Flash
     """

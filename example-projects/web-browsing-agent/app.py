@@ -62,7 +62,7 @@ def chat():
     try:
         # Process the query using your existing agent
         messages = integrate_api_calls_with_gemini(
-            model="gemini-2.5-pro", 
+            model="gemini-3.1-pro", 
             query=query, 
             messages=chat_sessions[session_id]['messages'].copy(),
             query_style="2"  # Text mode

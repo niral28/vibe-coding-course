@@ -20,7 +20,7 @@ CORS(app, origins=['http://localhost:5001', 'http://127.0.0.1:5001', '*'])
 active_games = {}
 
 class WordleGameSession:
-    def __init__(self, game_id, word_of_the_day, model="gemini-2.5-flash"):
+    def __init__(self, game_id, word_of_the_day, model="gemini-3.5-flash"):
         self.game_id = game_id
         self.word_of_the_day = word_of_the_day
         self.model = model

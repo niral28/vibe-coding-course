@@ -1,0 +1,34 @@
+# GSET Vibe Coding — course dependencies
+#
+# Install these into your conda environment:
+#     conda activate gset-vibes
+#     pip install -r requirements.txt
+#
+# (Adding a new library? Put it here, then re-run the pip install command above.)
+
+# --- Core AI / API ---
+google-genai>=2.11.0     # Google Gemini SDK (from google import genai) — Gemini 3.x
+openai>=1.93.0           # Used for the Gemini OpenAI-compatible endpoint
+python-dotenv>=1.1.1     # Loads your GEMINI_API_KEY from a .env file
+requests>=2.32.4         # Simple HTTP calls (e.g. Wikipedia)
+pydantic>=2.5.0          # Structured/validated model outputs
+
+# --- Web app projects (Wordle web, web-browsing agent) ---
+flask>=3.0.0
+flask-cors>=4.0.0
+websockets>=12.0
+colorama>=0.4.6
+pynput>=1.7.6
+
+# --- Notebooks & data ---
+jupyter>=1.0.0
+ipykernel>=6.29.0
+numpy>=1.24.0
+pandas>=2.0.0
+pillow>=10.0.0
+
+# --- Week 2: image & audio ---
+soundfile>=0.12.0
+sounddevice>=0.4.6
+librosa>=0.10.0
+pygame>=2.5.0

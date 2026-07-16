@@ -15,7 +15,9 @@ build fun AI apps (chatbots, games, image and audio tools) using Google's Gemini
   **Windows**, open the app called **PowerShell**.
 - **Command** — a line of text you type into the terminal and then press **Enter** to run.
 - **API key** — a secret password that lets your code talk to Google's AI. You'll get one for free.
-- **`uv`** — a free tool that installs everything the code needs, automatically. You only set it up once.
+- **Anaconda / `conda`** — a free tool that manages Python and installs the libraries the code needs.
+  You set it up once, then activate it each time you work on the course.
+- **`pip`** — the command that installs Python libraries (we use it to install everything in `requirements.txt`).
 
 Whenever you see a gray box like this, it's a command to copy and paste into your terminal:
 
@@ -27,30 +29,26 @@ echo "Hello! I just ran my first command 🎉"
 
 ## ✅ Setup (do this once)
 
-### Step 1 — Install `uv`
+### Step 1 — Install Anaconda
 
-`uv` sets up the code for you so you don't have to install things one by one.
+Anaconda gives you Python plus `conda`, the tool we use to set up the course.
 
-**On Mac:** copy this into your Terminal and press Enter:
+1. Go to **https://www.anaconda.com/download** and download the installer for your computer
+   (**Mac** or **Windows**).
+2. Open the installer and click through it, accepting the default options.
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+After it finishes, **close your terminal and open a new one** (this makes `conda` available).
 
-**On Windows:** copy this into PowerShell and press Enter:
+> **Mac:** open the app called **Terminal**. **Windows:** open the app called **Anaconda Prompt**
+> (search for it in the Start menu) — use this instead of PowerShell for the course.
 
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-After it finishes, **close the terminal and open a new one** (this makes `uv` available).
 Check that it worked by running:
 
 ```bash
-uv --version
+conda --version
 ```
 
-If you see a version number (like `uv 0.10.2`), you're good. ✅
+If you see a version number (like `conda 24.9.0`), you're good. ✅
 
 ### Step 2 — Get the course code onto your computer
 
@@ -63,17 +61,31 @@ cd vibe-coding-course
 
 > `cd` means "change directory" — it's how you move into a folder in the terminal.
 
-### Step 3 — Install everything the code needs
+### Step 3 — Create your course environment and install the libraries
 
-Run this one command. `uv` reads the `pyproject.toml` file and installs everything for you
-(this may take a minute the first time):
+First, create a Python environment named **`gset-vibes`** (do this once):
 
 ```bash
-uv sync
+conda create --name gset-vibes python=3.10 -y
 ```
 
-When it's done, all the AI libraries are installed. You never have to do this again unless
-the course adds new tools (then just run `uv sync` again).
+Now **activate** it. You'll run this line every time you open a new terminal to work on
+the course:
+
+```bash
+conda activate gset-vibes
+```
+
+> When it's active, you'll see `(gset-vibes)` at the start of your terminal line.
+
+Finally, install all the AI libraries the course needs (this may take a minute the first time):
+
+```bash
+pip install -r requirements.txt
+```
+
+When it's done, everything is installed. You only re-run the `pip install` line if the
+course adds new tools (or if a library ever seems missing).
 
 ### Step 4 — Get your free Google Gemini API key
 
@@ -105,11 +117,12 @@ Save the file. **You're all set!** 🎉
 
 ## ▶️ Running the code
 
-Because we use `uv`, put **`uv run`** in front of any command to run it with all the
-libraries ready. For example, to run the Class 3 Gemini examples:
+Make sure your environment is active first (you'll see `(gset-vibes)` in your terminal). If
+it isn't, run `conda activate gset-vibes`. Then run any file with `python`. For example, to
+run the Class 3 Gemini examples:
 
 ```bash
-uv run python week1-foundations-text/class03-text-generation/intro_to_gemini.py
+python week1-foundations-text/class03-text-generation/intro_to_gemini.py
 ```
 
 ### Running the notebooks (the `.ipynb` files)
@@ -117,43 +130,46 @@ uv run python week1-foundations-text/class03-text-generation/intro_to_gemini.py
 Notebooks let you run code one piece at a time — great for learning. To open them:
 
 ```bash
-uv run jupyter lab
+jupyter lab
 ```
 
 This opens Jupyter in your web browser. Click any `.ipynb` file to open it, then press
 **Shift + Enter** to run a block of code.
 
 > Using **VS Code** or **Cursor** instead? Just open a `.ipynb` file, and when it asks which
-> "kernel" or "environment" to use, pick the one named **`.venv`** (that's the one `uv` made).
+> "kernel" or "environment" to use, pick the one named **`gset-vibes`** (the conda environment
+> you made in Step 3).
 
 ---
 
 ## 🧰 Adding or changing libraries (for later)
 
-All dependencies live in one file: `pyproject.toml`. You don't edit it by hand — instead:
+All dependencies live in one file: `requirements.txt`. To add a new library:
+
+1. Open `requirements.txt` and add the library's name on its own line (for example
+   `matplotlib`).
+2. With your environment active, install it:
 
 ```bash
-# Add a new library
-uv add some-library-name
-
-# Remove one
-uv remove some-library-name
+pip install -r requirements.txt
 ```
 
-`uv` keeps a file called `uv.lock` that records the exact versions everyone should use, so
-the code works the same on every computer. Both `pyproject.toml` and `uv.lock` are part of
-the project — don't delete them.
+That's it — the library is now available. Keeping everything in `requirements.txt` means
+the code works the same on every computer.
 
 ---
 
 ## 🆘 Common problems
 
-- **"uv: command not found"** — You need to close and re-open your terminal after installing
-  `uv` (Step 1). If it still fails, run the install command again.
+- **"conda: command not found"** — You need to close and re-open your terminal after installing
+  Anaconda (Step 1). On **Windows**, use the **Anaconda Prompt** app, not PowerShell.
+- **You don't see `(gset-vibes)` in your terminal** — Run `conda activate gset-vibes` before
+  running any code. You have to do this each time you open a new terminal.
 - **"GEMINI_API_KEY not found" or an authentication error** — Your `.env` file is missing or
   the key is wrong. Re-check Step 5, and make sure the file is named exactly `.env`.
-- **A library seems missing** — Run `uv sync` again to make sure everything is installed.
-- **Notebook won't run / wrong Python** — Pick the `.venv` kernel (see the notebooks section).
+- **A library seems missing** — Make sure your environment is active, then run
+  `pip install -r requirements.txt` again.
+- **Notebook won't run / wrong Python** — Pick the `gset-vibes` kernel (see the notebooks section).
 
 ---
 
@@ -179,7 +195,8 @@ voice-enabled web browsing agent).
 - [Get a Gemini API key](https://aistudio.google.com/apikey)
 - [Gemini API docs](https://ai.google.dev/gemini-api/docs)
 - [What's new in Gemini 3.5](https://ai.google.dev/gemini-api/docs/whats-new-gemini-3.5)
-- [uv documentation](https://docs.astral.sh/uv/)
+- [Download Anaconda](https://www.anaconda.com/download)
+- [conda cheat sheet](https://docs.conda.io/projects/conda/en/latest/user-guide/cheatsheet.html)
 
 ---
 

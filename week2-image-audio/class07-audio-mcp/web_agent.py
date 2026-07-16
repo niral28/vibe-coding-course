@@ -45,7 +45,7 @@ def web_search(query):
         summary = response.text
         client = genai.Client()
         response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You are responsible for extracting the answer from the wikipedia article. The query is: {quotedquery}. You must extract the answer from the wikipedia article, do not make up any information. If the answer is not found, return the answer as 'No answer found'. Also return the links to the wikipedia article or any related articles found in the extracted text. The wikipedia article is: {summary}",
         config={
             "response_mime_type": "application/json",
@@ -65,7 +65,7 @@ def web_open_link(link:str) -> str:
     if response.status_code == 200:
         summary = response.text
         response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You are responsible for extracting the answer from the wikipedia article. The query is: {query}. You must extract the answer from the wikipedia article, do not make up any information. If the answer is not found, return the answer as 'No answer found'. Also return the links to the wikipedia article or any related articles found in the extracted text. The wikipedia article is: {summary}",
         config={
             "response_mime_type": "application/json",
@@ -86,7 +86,7 @@ def chat_turns_to_string(messages:list[dict]):
 def generate_reflection(messages:list[dict]):
     client = genai.Client()
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You're a deep research assistant but so far you have not been able to find the answer to the user's question. Please reflect on your previous attempts and try a different approach. Come up with several new approaches and return them in a list. Here's the conversation history:\n"+chat_turns_to_string(messages),
         config={
             "response_mime_type": "application/json",
@@ -103,7 +103,7 @@ def generate_reflection(messages:list[dict]):
 def generate_search_plan(query:str) -> str:
     client = genai.Client()
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.5-flash",
         contents=f"You're a deep research assistant. The user's question is: {query}. Please generate a search plan for the user's question, think step by step, break down the question into logicial steps and come up with a list of queries to search for the answer to the user's question. Do not make any assumptions, and do not rely on any your knowledge as it is outdated. Think from first principles.",
         config={
             "response_mime_type": "application/json",
@@ -137,7 +137,7 @@ def execute_function(tool_name: str, args) -> Tuple[bool, str]:
 
 
 from datetime import datetime
-def integrate_api_calls_with_gemini(model:str="gemini-2.5-flash", max_iterations:int=5, query:str=None, messages:list[dict]=None, query_style:str=None):
+def integrate_api_calls_with_gemini(model:str="gemini-3.5-flash", max_iterations:int=5, query:str=None, messages:list[dict]=None, query_style:str=None):
     count = 0
     google_client = genai.Client()
     model_info = google_client.models.get(model=model)
@@ -349,6 +349,6 @@ while not user_quit:
         user_quit = True
         break
     messages.append({"role": "user", "content": f"[system] Today's date is: {datetime.now().strftime('%Y-%m-%d')}, the user's question is: {query}"})
-    messages = integrate_api_calls_with_gemini(model="gemini-2.5-flash", query=query, messages=messages, query_style=query_style)
+    messages = integrate_api_calls_with_gemini(model="gemini-3.5-flash", query=query, messages=messages, query_style=query_style)
     query = ''
     query_style = ''

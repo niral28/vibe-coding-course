@@ -9,11 +9,14 @@ This is a vibe coding course repository focused on teaching Python programming a
 ## Setup and Environment
 
 **Python Environment:**
-- Dependencies are managed with `uv` via the root `pyproject.toml` (single source of truth).
-- Install everything: `uv sync`
-- Run any script/command in the environment: `uv run python <path/to/script.py>`
-- Add or remove a package: `uv add <pkg>` / `uv remove <pkg>` (never hand-edit `uv.lock`).
-- `pyproject.toml` and `uv.lock` are committed; do not delete them.
+- Managed with Anaconda/`conda`. Dependencies live in the root `requirements.txt` (single source of truth).
+- Create the env once: `conda create --name gset-vibes python=3.10 -y`
+- Activate it each session: `conda activate gset-vibes`
+- Install everything: `pip install -r requirements.txt`
+- Run any script: `python <path/to/script.py>` (with the `gset-vibes` env active).
+- Add a package: add it to `requirements.txt`, then re-run `pip install -r requirements.txt`.
+- Note: `pyproject.toml`/`uv.lock` remain in the repo from the old `uv` setup but are no longer the
+  install path used in class — `requirements.txt` is.
 
 **Required Environment Variables:**
 - `GEMINI_API_KEY`: Google Gemini API key (copy `shared/.env.example` to `.env` at the repo root)
@@ -36,9 +39,8 @@ This is a vibe coding course repository focused on teaching Python programming a
 
 **Run Wordle Game:**
 ```bash
-cd class1
-conda activate gemini-project
-python intro_to_gemini.py
+conda activate gset-vibes
+python week1-foundations-text/class03-text-generation/intro_to_gemini.py
 ```
 
 **Key Functions in intro_to_gemini.py:**
