@@ -53,6 +53,18 @@ Used for:
 
 ---
 
+## Guides in this folder
+
+### 🚀 [antigravity-tips.md](antigravity-tips.md)
+**Beginner cheat sheet for Google Antigravity** — Google's free agentic AI code editor.
+Covers setup, the Editor vs. Agent Manager views, Fast vs. Planning modes, custom rules,
+keyboard shortcuts, and habits for reviewing what the AI writes.
+
+> Setting up Git & GitHub with SSH? See the **"Setting up Git and GitHub"** section in the
+> main [project README](../README.md).
+
+---
+
 ## Additional Resources
 
 ### Online Documentation

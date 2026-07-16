@@ -98,20 +98,38 @@ your code directly.
 
 ### Step 5 — Save your API key in a `.env` file
 
-A `.env` file is where you keep secret keys. There's a template you can copy:
+A `.env` file is where you keep secret keys. Each project folder already has a template
+called **`.env.example`** — you just make a copy of it named **`.env`** and paste in your key.
+
+**The easy way (works everywhere):** make one `.env` in the main project folder. From the
+project's main folder, run:
 
 ```bash
 cp shared/.env.example .env
 ```
 
-Now open the new `.env` file (double-click it, or open it in your code editor) and replace
-`your_gemini_api_key_here` with the key you copied:
+> The code looks in the current folder and then in the folders above it, so a single `.env`
+> in the main project folder is found by every lesson. ✅
+
+**Prefer one per folder?** Every folder that needs a key also has its own `.env.example`.
+Copy it to `.env` right there — for example, in the Class 3 folder:
+
+```bash
+cp week1-foundations-text/class03-text-generation/.env.example week1-foundations-text/class03-text-generation/.env
+```
+
+> Not comfortable with the terminal? Just **duplicate** the `.env.example` file in your
+> editor and **rename the copy to `.env`**.
+
+Either way, open your new `.env` file and replace `your_gemini_api_key_here` with the key you
+copied:
 
 ```
 GEMINI_API_KEY=paste_your_real_key_here
 ```
 
-Save the file. **You're all set!** 🎉
+Save the file. **You're all set!** 🎉 (Your `.env` stays private — it's never shared or
+uploaded. Only the `.env.example` templates are.)
 
 ---
 
@@ -173,6 +191,96 @@ the code works the same on every computer.
 
 ---
 
+## 🐙 Setting up Git and GitHub (with SSH)
+
+**Git** is a tool that saves snapshots of your code. **GitHub** is a website that stores
+those snapshots online so you can back up your work and share it. You'll set this up once.
+
+### Step 1 — Install Git
+
+**On Mac:** Git usually comes with the developer tools. Open **Terminal** and run:
+
+```bash
+git --version
+```
+
+If you see a version number, you're done. If it asks to install "command line developer
+tools," click **Install** and wait for it to finish.
+
+**On Windows:** download and install **Git for Windows** from **https://git-scm.com/download/win**.
+Accept the default options. When it finishes, open the app called **Git Bash** — you'll type
+the commands below there.
+
+### Step 2 — Tell Git who you are
+
+Run these two commands (use your own name and email). This just labels your snapshots:
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+### Step 3 — Create a free GitHub account
+
+1. Go to **https://github.com/signup**.
+2. Pick a username, enter your email, and create a password.
+3. Verify your email when GitHub sends you a confirmation.
+
+### Step 4 — Create an SSH key
+
+An **SSH key** is a secure "handshake" so GitHub knows it's really you — no passwords needed
+each time. It comes in two parts: a **private** key (keep secret, never share) and a
+**public** key (safe to share with GitHub).
+
+In **Terminal** (Mac) or **Git Bash** (Windows), run this — use *your* GitHub email:
+
+```bash
+ssh-keygen -t ed25519 -C "you@example.com"
+```
+
+When it asks *"Enter file in which to save the key"* and *"Enter passphrase,"* just press
+**Enter** each time to accept the defaults. (A passphrase is optional extra protection.)
+
+### Step 5 — Copy your public key
+
+**On Mac:**
+
+```bash
+pbcopy < ~/.ssh/id_ed25519.pub
+```
+
+**On Windows (Git Bash):**
+
+```bash
+cat ~/.ssh/id_ed25519.pub | clip
+```
+
+Your public key is now copied to your clipboard. ✅ (This copies the **`.pub`** file — the
+*public* half. Never share the file without `.pub`.)
+
+### Step 6 — Add the key to GitHub
+
+1. Go to **https://github.com/settings/keys**.
+2. Click **"New SSH key"**.
+3. Give it a **Title** (like "My laptop"), leave Key type as **Authentication Key**, and
+   **paste** your key into the big box.
+4. Click **"Add SSH key"**.
+
+### Step 7 — Test it
+
+```bash
+ssh -T git@github.com
+```
+
+The first time, type **`yes`** if it asks whether to continue. If you see a message like
+*"Hi *your-username*! You've successfully authenticated,"* 🎉 you're all set.
+
+> **Using this course code with your own GitHub repo?** When you create a repo on GitHub,
+> choose the **SSH** URL (it starts with `git@github.com:`) to clone or connect it — that's
+> the one your new key unlocks.
+
+---
+
 ## 🗓️ What's in this course
 
 - **Duration:** 3 weeks, 12 classes
@@ -197,6 +305,8 @@ voice-enabled web browsing agent).
 - [What's new in Gemini 3.5](https://ai.google.dev/gemini-api/docs/whats-new-gemini-3.5)
 - [Download Anaconda](https://www.anaconda.com/download)
 - [conda cheat sheet](https://docs.conda.io/projects/conda/en/latest/user-guide/cheatsheet.html)
+- [Google Antigravity — tips & tricks](docs/antigravity-tips.md) (our beginner cheat sheet for the AI code editor)
+- [Download Google Antigravity](https://antigravity.google)
 
 ---
 
