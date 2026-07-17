@@ -30,37 +30,39 @@
 
 # Defining variables 
 
-name = "Alex"
-favorite_color = "blue"
-age = 16
-height = 5.8
-is_student = True
+# name = "Niral"
+# age = 16
+# height = 5.8
+# is_student = False
+
+
+# In[ ]:
+# favorite_color = input("What's your favorite color?\n")
+# age = int(input("What's your age?\n"))
+
+# # Printing output
+
+# print(f"Hi, I'm {name}! I'm {age} years old. And their favorite color is: {favorite_color}.")
 
 
 # In[ ]:
 
 
-# Printing output
-
-print(f"Hi, I'm {name}! I'm {age} years old.")
-
-
-# In[ ]:
-
-
-if is_student:
-    print(f'and {name} is a Student 🧑‍🎓')
-else:
-    print(f'and {name} is an adult 🤓')
+# if age == 16:
+#     print(f'and {name} is a teenager 🧑‍🎓')
+# elif age < 18:
+#     print(f'and {name} is a Student 🧑‍🎓')
+# else:
+#     print(f'and {name} is an adult 🤓')
 
 
 # In[ ]:
 
 
-# Asking for input
+# # Asking for input
 
-my_name = input("What's your name:\n")
-print(f'Hi {my_name}!')
+# my_name = input("What's your name:\n")
+# print(f'Hi {my_name}!')
 
 
 # ## Lists
@@ -72,11 +74,12 @@ print(f'Hi {my_name}!')
 
 # Creating lists
 fruits = ["apple", "banana", "orange", "grape"]
+# 0, 1,2,3,4
 numbers = [1, 2, 3, 4, 5]
 mixed_list = ["hello", 42, True, 3.14]
 
-print("Fruits:", fruits)
-print("Numbers:", numbers)
+print("Fruits:", fruits[0])
+print("Numbers:", numbers[4])
 print("Mixed list:", mixed_list)
 
 
@@ -89,6 +92,9 @@ print("Last fruit:", fruits[-1])
 
 # Adding items to lists
 fruits.append("strawberry")
+fruits.append("mango")
+fruits.append("pineapple")
+fruits += ["strawberry", "mango", "pineapple"]
 print("After adding strawberry:", fruits)
 
 # Length of a list
@@ -103,27 +109,34 @@ print("Number of fruits:", len(fruits))
 
 
 # Basic for loop - going through each item in a list
-print("All fruits:")
-for fruit in fruits:
-    print(f"- {fruit}")
+# print("All fruits:")
+# # for fruit in fruits:
+# #     print(f"Fruit: {fruit}")
 
-print("\nSquaring numbers:")
-for num in numbers:
-    squared = num * num
-    print(f"{num} squared is {squared}")
+# for i in range(0, len(fruits)):
+#     fruit = fruits[i]
+#     print(f"Fruit: {fruit}")
+
+# for num in numbers:
+#     print(f"- {num}")
+
+# print("\nSquaring numbers:")
+# for num in numbers:
+#     squared = num * num
+#     print(f"{num} squared is {squared}")
 
 
-# In[ ]:
+# # In[ ]:
 
 
-# Using range() to create a sequence of numbers
-print("Counting from 1 to 5:")
-for i in range(1, 6):
-    print(f"Count: {i}")
+# # Using range() to create a sequence of numbers
+# print("Counting from 1 to 5:")
+# for i in range(1, 6):
+#     print(f"Count: {i}")
 
-print("\nCounting by 2s:")
-for i in range(0, 11, 2):
-    print(f"Even number: {i}")
+# print("\nCounting by 2s:")
+# for i in range(0, 11, 2):
+#     print(f"Even number: {i}")
 
 
 # ## While Loops
@@ -147,7 +160,8 @@ print("Blast off! 🚀")
 
 # While loop with user input (for demonstration)
 # Note: This would wait for user input in an interactive environment
-secret_number = 7
+import random
+secret_number = random.randint(1, 10)
 guess = 0
 
 print("I'm thinking of a number between 1 and 10...")
