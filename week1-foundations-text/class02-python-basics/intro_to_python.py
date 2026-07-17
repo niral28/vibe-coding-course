@@ -49,12 +49,12 @@ print(f"Hi, I'm {name}! I'm {age} years old.")
 
 
 if is_student:
-    print(f'and {name} is a Student 🧑‍🎓')
+    print(f'and {name} is a Student! 🎓')
 else:
     print(f'and {name} is an adult 🤓')
 
 
-# In[ ]:
+# In[ ):
 
 
 # Asking for input
