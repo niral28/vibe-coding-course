@@ -44,7 +44,7 @@ load_dotenv()
 
 # --- 0. Your settings — change these! ---------------------------------------
 TEAM_A = "Argentina"          # <-- change to a real finalist
-TEAM_B = "France"             # <-- change to the other finalist
+TEAM_B = "Spain"             # <-- change to the other finalist
 
 TEXT_MODEL = "gemini-3.5-flash"          # the AI that writes the hype text
 IMAGE_MODEL = "gemini-2.5-flash-image"   # "Nano Banana" — the AI that draws the poster

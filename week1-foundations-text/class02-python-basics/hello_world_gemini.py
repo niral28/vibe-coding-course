@@ -49,7 +49,7 @@ if response.choices[0]:
 # Let's create a more interactive example
 def chat_with_gemini(max_user_turns:int = 5):
     messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are a helpful assistant. Today's date is 7/17/2026. Keep your answers short and succinct while still preserving key details. Update your all your info on the current state of the fifa world cup 2026."},
         ]
     count=0
     client = OpenAI(
