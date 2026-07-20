@@ -11,6 +11,8 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from openai import OpenAI
+
 
 load_dotenv()
 
@@ -24,8 +26,6 @@ print(response.text)
 
 
 
-import os
-from openai import OpenAI
 
 client = OpenAI(
     api_key=os.environ['GEMINI_API_KEY'],
@@ -35,7 +35,7 @@ client = OpenAI(
 response = client.chat.completions.create(
     model="gemini-3.5-flash",
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "You are a helpful assistant. Search the internet when you do not have sufficient information. Make answers direct and brief, but do not compromise on information quality. Additionally, I can not see the formatting because it is not a Latex compiler, so please format responses as only text."},
         {
             "role": "user",
             "content": "Explain to me how vibe coding is in a few words"

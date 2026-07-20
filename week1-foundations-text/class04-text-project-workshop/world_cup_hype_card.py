@@ -44,7 +44,7 @@ load_dotenv()
 
 # --- 0. Your settings — change these! ---------------------------------------
 TEAM_A = "Argentina"          # <-- change to a real finalist
-TEAM_B = "France"             # <-- change to the other finalist
+TEAM_B = "Spain"             # <-- change to the other finalist
 
 TEXT_MODEL = "gemini-3.5-flash"          # the AI that writes the hype text
 IMAGE_MODEL = "gemini-2.5-flash-image"   # "Nano Banana" — the AI that draws the poster
@@ -76,7 +76,7 @@ def make_poster(team_a, team_b, filename="poster.png"):
     art_prompt = (
         f"A vibrant, exciting soccer match poster for the World Cup final: "
         f"{team_a} versus {team_b}. Show both teams' colors, a packed stadium "
-        f"at night, dramatic lighting, bold graphic-design style. No real faces."
+        f"at night, dramatic lighting, bold graphic-design style. Put lamine yamal and Messi. Write the scoreline on top as 1-0 to Spain"
     )
     response = client.models.generate_content(model=IMAGE_MODEL, contents=art_prompt)
 

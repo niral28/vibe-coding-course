@@ -30,13 +30,13 @@
 
 # Defining variables 
 
-name = "Alex"
-favorite_color = "blue"
-age = 16
+name = "Ansh"
+
+age = 17
 height = 5.8
 is_student = True
 
-
+fa
 # In[ ]:
 
 
