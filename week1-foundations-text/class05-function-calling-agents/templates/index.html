@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikipedia Agentic RAG — Gemini 3.5 Flash</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-gradient-start: #080711;
+            --bg-gradient-end: #0f0e26;
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.07);
+            --panel-border-glow: rgba(139, 92, 246, 0.3);
+            --primary: #8b5cf6;
+            --primary-hover: #a78bfa;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --accent: #ec4899;
+            --accent-glow: rgba(236, 72, 153, 0.3);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.3);
+            --info: #3b82f6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-dark: #6b7280;
+            --card-radius: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient glow circles in the background */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            bottom: 50px;
+            right: -150px;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Glassmorphism Header Card */
+        header {
+            text-align: center;
+            padding: 2.5rem 1.5rem;
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--card-radius);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--info));
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 30%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        header .badge {
+            display: inline-block;
+            margin-top: 1rem;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #c084fc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Search Form Card */
+        .search-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .search-card:focus-within {
+            border-color: var(--panel-border-glow);
+            box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.15);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            position: relative;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 1.1rem 1.5rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            font-size: 1.05rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow), inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-dark);
+        }
+
+        button.search-btn {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 2rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px 0 var(--primary-glow);
+        }
+
+        button.search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 var(--primary-glow);
+            background: linear-gradient(135deg, #9333ea, var(--primary));
+        }
+
+        button.search-btn:active {
+            transform: translateY(0);
+        }
+
+        button.search-btn:disabled {
+            background: var(--panel-border);
+            color: var(--text-dark);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Suggestions Row */
+        .suggestions {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .suggestions span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .suggestion-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-chip:hover {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--text-main);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Interactive Output Layout */
+        .output-section {
+            display: none; /* Shown dynamically */
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Thinking Indicator */
+        .thinking-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .pulse-dot {
+            width: 14px;
+            height: 14px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+            }
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
+            }
+            100% {
+                transform: scale(0.8);
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
+
+        .thinking-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        /* Stepper & Logs Card */
+        .stepper-card {
+            background: rgba(10, 8, 26, 0.5);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .stepper-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 2px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .timeline-step {
+            position: relative;
+            animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes slide-in {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .timeline-node {
+            position: absolute;
+            left: -2.6rem;
+            top: 0.2rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #1e1b4b;
+            border: 3px solid var(--text-dark);
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-node.thought {
+            border-color: var(--accent);
+            background: rgba(236, 72, 153, 0.2);
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .timeline-node.search_wikipedia {
+            border-color: var(--primary);
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .timeline-node.search_result {
+            border-color: var(--info);
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .timeline-node.give_answer {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 8px var(--success-glow);
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+        }
+
+        .timeline-header {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .timeline-header.thought { color: #f472b6; }
+        .timeline-header.search_wikipedia { color: #a78bfa; }
+        .timeline-header.search_result { color: #60a5fa; }
+        .timeline-header.give_answer { color: #34d399; }
+
+        .timeline-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .timeline-detail-box {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #818cf8;
+            max-height: 100px;
+            overflow-y: auto;
+            border-left: 3px solid var(--info);
+        }
+
+        /* Final Grounded Answer Card */
+        .answer-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(236, 72, 153, 0.05)), var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: var(--card-radius);
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.1);
+            animation: fade-up 0.5s ease both;
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .answer-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #ffffff, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .answer-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Citation block */
+        .citation-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .citation-box:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .wiki-logo {
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            color: #000;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        .citation-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .citation-label {
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .citation-link {
+            font-size: 0.95rem;
+            color: #a78bfa;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Educational Tab Panel */
+        .explainer-card {
+            background: var(--panel-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: var(--card-radius);
+            padding: 2.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .explainer-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explainer-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        /* Explainer Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--panel-border);
+            margin-bottom: 1.5rem;
+            gap: 0.5rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-dark);
+            padding: 0.75rem 1.25rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-muted);
+        }
+
+        .tab-btn.active {
+            color: var(--primary-hover);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tab-desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .tab-desc strong {
+            color: var(--text-main);
+        }
+
+        /* Code Block */
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #d1d5db;
+            position: relative;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .code-lang {
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* Code coloring helpers (approximated basic syntax highlight) */
+        .token-keyword { color: #f472b6; } /* pink */
+        .token-string { color: #34d399; }  /* green */
+        .token-comment { color: #6b7280; font-style: italic; } /* gray */
+        .token-def { color: #60a5fa; }      /* blue */
+
+        /* Alert Callout */
+        .alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+            color: var(--text-dark);
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        footer a:hover {
+            color: var(--primary-hover);
+        }
+
+        /* SVG icons styling */
+        .icon {
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            vertical-align: middle;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="badge">Gemini 3.5 Flash + RAG</div>
+            <h1>
+                <svg class="icon" style="width: 2rem; height: 2rem;" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Grounded Research Agent
+            </h1>
+            <p>An agentic search framework powered by Wikipedia. The model uses function calling to browse Wikipedia pages recursively until it can deliver a fully grounded answer with complete citations.</p>
+        </header>
+
+        <!-- Search input box -->
+        <div class="search-card">
+            <div class="alert" id="error-alert">
+                <svg class="icon" viewBox="0 0 24 24" style="stroke: #f87171;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span id="error-text">An error occurred.</span>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="query-input" placeholder="Ask anything, e.g., 'What is the tallest mountain on Mars?'" autocomplete="off">
+                <button class="search-btn" id="search-submit">
+                    <span id="btn-text">Ask Agent</span>
+                    <svg class="icon" id="btn-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+            </div>
+
+            <div class="suggestions">
+                <span>Try asking:</span>
+                <button class="suggestion-chip" onclick="applySuggestion('What is the highest mountain on Earth and what is its height?')">Tallest Mountain</button>
+                <button class="suggestion-chip" onclick="applySuggestion('Who wrote the novel Frankenstein and in which year?')">Frankenstein Author</button>
+                <button class="suggestion-chip" onclick="applySuggestion('What is the distance of the Moon from Earth?')">Moon Distance</button>
+            </div>
+        </div>
+
+        <!-- Output section (Timeline steps and result) -->
+        <div class="output-section" id="output-section">
+            
+            <!-- Dynamic thinking indicator -->
+            <div class="thinking-card" id="thinking-card">
+                <div class="pulse-dot"></div>
+                <div class="thinking-text" id="thinking-status">Agent is launching the research environment...</div>
+            </div>
+
+            <!-- Stepper of Agentic Steps -->
+            <div class="stepper-card" id="stepper-card">
+                <div class="stepper-title">
+                    <svg class="icon" style="color: var(--primary-hover)" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Agent Execution Path (Chronological Log)
+                </div>
+                <div class="timeline" id="steps-timeline">
+                    <!-- Steps will be injected here dynamically -->
+                </div>
+            </div>
+
+            <!-- Final grounded answer card -->
+            <div class="answer-card" id="answer-card" style="display: none;">
+                <div class="answer-title">
+                    <svg class="icon" style="color: var(--success); width: 1.75rem; height: 1.75rem;" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Grounded Answer
+                </div>
+                <div class="answer-text" id="answer-text">
+                    <!-- Answer content -->
+                </div>
+                
+                <a href="#" target="_blank" class="citation-box" id="citation-link-box">
+                    <div class="wiki-logo">W</div>
+                    <div class="citation-info">
+                        <div class="citation-label">Verified Wikipedia Source</div>
+                        <div class="citation-link" id="citation-url">
+                            https://en.wikipedia.org/wiki/...
+                            <svg class="icon" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Interactive Educational Explain Code Section -->
+        <div class="explainer-card">
+            <div class="explainer-title">
+                <svg class="icon" style="color: var(--accent)" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                How It Works Under the Hood
+            </div>
+            <p class="explainer-subtitle">Explore the exact Python logic backing this agent. Select a core component below to see how standard RAG prevents model hallucination simply.</p>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab(event, 'tab-tool')">1. The Wikipedia Tool</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-prompt')">2. Anti-Hallucination Prompt</button>
+                <button class="tab-btn" onclick="switchTab(event, 'tab-loop')">3. The Agentic Loop</button>
+            </div>
+
+            <!-- Tab 1: The Tool -->
+            <div class="tab-pane active" id="tab-tool">
+                <div class="tab-desc">
+                    The agent is equipped with a custom tool <strong>search_wikipedia(query)</strong>. Instead of relying on its internal knowledge (which could be stale or hallucinated), the Python backend queries the live Wikipedia Search API, fetches the first matching article's introductory text, and feeds it directly into the Gemini context.
+                </div>
+                <pre><span class="code-lang">python</span><code><span class="token-keyword">def</span> <span class="token-def">search_wikipedia</span>(query):
+    <span class="token-comment"># Query the Wikipedia Search API for matching titles</span>
+    search_response = requests.get(api_url, params={
+        <span class="token-string">"action"</span>: <span class="token-string">"query"</span>, <span class="token-string">"list"</span>: <span class="token-string">"search"</span>, 
+        <span class="token-string">"srsearch"</span>: query, <span class="token-string">"format"</span>: <span class="token-string">"json"</span>, <span class="token-string">"srlimit"</span>: <span class="number">1</span>
+    })
+    title = search_response.json()[<span class="token-string">"query"</span>][<span class="token-string">"search"</span>][<span class="number">0</span>][<span class="token-string">"title"</span>]
+    
+    <span class="token-comment"># Retrieve plain-text summary intro of that page</span>
+    page_response = requests.get(api_url, params={
+        <span class="token-string">"action"</span>: <span class="token-string">"query"</span>, <span class="token-string">"prop"</span>: <span class="token-string">"extracts"</span>, 
+        <span class="token-string">"exintro"</span>: <span class="token-keyword">True</span>, <span class="token-string">"explaintext"</span>: <span class="token-keyword">True</span>, 
+        <span class="token-string">"titles"</span>: title, <span class="token-string">"format"</span>: <span class="token-string">"json"</span>
+    })
+    content = page_response.json()[<span class="token-string">"query"</span>][<span class="token-string">"pages"</span>][...][<span class="token-string">"extract"</span>]
+    
+    <span class="token-keyword">return</span> {<span class="token-string">"title"</span>: title, <span class="token-string">"url"</span>: f<span class="token-string">"https://wikipedia.org/wiki/{title}"</span>, <span class="token-string">"content"</span>: content}</code></pre>
+            </div>
+
+            <!-- Tab 2: The Prompt -->
+            <div class="tab-pane" id="tab-prompt">
+                <div class="tab-desc">
+                    The <strong>Anti-Hallucination System Prompt</strong> binds the LLM to extreme honesty. It explicitly orders the agent to act as a strict librarian: it cannot guess, it must run searches first, and it must cite the exact Wikipedia URL using the <code>give_answer</code> tool.
+                </div>
+                <pre><span class="code-lang">text</span><code><span class="token-comment"># The core instruction set governing agent integrity:</span>
+system_prompt = (
+    <span class="token-string">"You are a careful and helpful research assistant.\n"</span>
+    <span class="token-string">"You must NOT use your own memory — facts may be outdated or wrong.\n"</span>
+    <span class="token-string">"You must call search_wikipedia to find facts FIRST.\n"</span>
+    <span class="token-string">"You must answer ONLY using what the search returned.\n"</span>
+    <span class="token-string">"If the search doesn't contain the answer, search again with different keywords, "</span>
+    <span class="token-string">"or say you couldn't find it (never make it up).\n"</span>
+    <span class="token-string">"When ready, call give_answer with the answer AND the source URL."</span>
+)</code></pre>
+            </div>
+
+            <!-- Tab 3: The Agentic Loop -->
+            <div class="tab-pane" id="tab-loop">
+                <div class="tab-desc">
+                    The program executes a multi-step <strong>Agentic Loop</strong>. If the model makes a search request, the backend interceptor runs the Wikipedia code, feeds the results back to the model, and calls Gemini again (up to 6 times). The loop stops immediately once Gemini invokes the <code>give_answer</code> tool.
+                </div>
+                <pre><span class="code-lang">python</span><code><span class="token-keyword">for</span> step <span class="token-keyword">in</span> <span class="token-keyword">range</span>(<span class="number">6</span>):
+    response = client.chat.completions.create(
+        model=<span class="token-string">"gemini-3.5-flash"</span>, messages=messages, tools=tools
+    )
+    ai_message = response.choices[<span class="number">0</span>].message
+    
+    <span class="token-comment"># If AI has no more tool calls, exit loop</span>
+    <span class="token-keyword">if</span> <span class="token-keyword">not</span> ai_message.tool_calls:
+        <span class="token-keyword">return</span> ai_message.content
+
+    <span class="token-comment"># Run Wikipedia queries requested by model</span>
+    <span class="token-keyword">for</span> call <span class="token-keyword">in</span> ai_message.tool_calls:
+        <span class="token-keyword">if</span> call.function.name == <span class="token-string">"search_wikipedia"</span>:
+            res = search_wikipedia(call.function.arguments[<span class="token-string">"query"</span>])
+            messages.append({<span class="token-string">"role"</span>: <span class="token-string">"tool"</span>, <span class="token-string">"content"</span>: res})
+            
+        <span class="token-keyword">elif</span> call.function.name == <span class="token-string">"give_answer"</span>:
+            <span class="token-keyword">return</span> call.function.arguments[<span class="token-string">"answer"</span>], call.function.arguments[<span class="token-string">"source_url"</span>]</code></pre>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            Built with Gemini 3.5 Flash &bull; Google Vibe Coding Classroom &bull; <a href="https://github.com/google" target="_blank">Google Deepmind</a>
+        </footer>
+
+    </div>
+
+    <!-- Frontend logic -->
+    <script>
+        function applySuggestion(val) {
+            document.getElementById('query-input').value = val;
+            triggerResearch();
+        }
+
+        function switchTab(evt, tabId) {
+            // Remove active classes
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Add active class to clicked button and target tab pane
+            evt.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Submits research query
+        document.getElementById('search-submit').addEventListener('click', triggerResearch);
+        document.getElementById('query-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                triggerResearch();
+            }
+        });
+
+        async function triggerResearch() {
+            const queryInput = document.getElementById('query-input');
+            const question = queryInput.value.trim();
+            const errorAlert = document.getElementById('error-alert');
+            const outputSection = document.getElementById('output-section');
+            const thinkingCard = document.getElementById('thinking-card');
+            const thinkingStatus = document.getElementById('thinking-status');
+            const stepsTimeline = document.getElementById('steps-timeline');
+            const answerCard = document.getElementById('answer-card');
+            const answerText = document.getElementById('answer-text');
+            const citationLinkBox = document.getElementById('citation-link-box');
+            const citationUrl = document.getElementById('citation-url');
+            const searchBtn = document.getElementById('search-submit');
+
+            // Reset UI states
+            errorAlert.style.display = 'none';
+            if (!question) {
+                showError("Please enter a factual question for the agent.");
+                return;
+            }
+
+            // Lock controls
+            queryInput.disabled = true;
+            searchBtn.disabled = true;
+
+            // Show output workspace
+            outputSection.style.display = 'flex';
+            thinkingCard.style.display = 'flex';
+            thinkingStatus.innerText = "Spawning the research agent...";
+            stepsTimeline.innerHTML = '';
+            answerCard.style.display = 'none';
+
+            try {
+                // Periodically update thinking text to show lifelike activity
+                const loadingPrompts = [
+                    "Waking up the research coordinator...",
+                    "Analyzing your question syntax...",
+                    "Consulting Wikipedia Search index...",
+                    "Gaining situational awareness...",
+                    "Synthesizing retrieved articles...",
+                    "Performing grounding validation..."
+                ];
+                let promptIndex = 0;
+                const promptTimer = setInterval(() => {
+                    if (promptIndex < loadingPrompts.length) {
+                        thinkingStatus.innerText = loadingPrompts[promptIndex++];
+                    }
+                }, 2200);
+
+                // Call the API endpoint
+                const response = await fetch('/api/research', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                clearInterval(promptTimer);
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || "The agent failed to answer.");
+                }
+
+                // Render chronological steps
+                thinkingStatus.innerText = "Formatting results...";
+                renderTimeline(data.steps, stepsTimeline);
+
+                // Fill answer
+                answerText.innerText = data.answer;
+                if (data.source_url) {
+                    citationLinkBox.style.display = 'flex';
+                    citationLinkBox.href = data.source_url;
+                    citationUrl.innerHTML = `${data.source_url} <svg class="icon" style="width: 0.9rem; height: 0.9rem;" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
+                } else {
+                    citationLinkBox.style.display = 'none';
+                }
+
+                // Smoothly reveal final answer
+                setTimeout(() => {
+                    thinkingCard.style.display = 'none';
+                    answerCard.style.display = 'block';
+                }, 800);
+
+            } catch (err) {
+                showError(err.message || "An unexpected network or server error occurred.");
+                thinkingCard.style.display = 'none';
+            } finally {
+                // Unlock inputs
+                queryInput.disabled = false;
+                searchBtn.disabled = false;
+            }
+        }
+
+        function showError(msg) {
+            const errorAlert = document.getElementById('error-alert');
+            const errorText = document.getElementById('error-text');
+            errorText.innerText = msg;
+            errorAlert.style.display = 'flex';
+            errorAlert.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderTimeline(steps, container) {
+            container.innerHTML = '';
+            
+            if (!steps || steps.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-dark); text-align: center; padding: 1rem;">No intermediate steps recorded (direct memory/thought answer).</div>`;
+                return;
+            }
+
+            steps.forEach((step, index) => {
+                const stepElem = document.createElement('div');
+                stepElem.className = 'timeline-step';
+                stepElem.style.animationDelay = `${index * 0.15}s`;
+
+                let nodeClass = 'thought';
+                let headerText = 'Agent Thought';
+                let bodyText = '';
+                let extraDetailHtml = '';
+
+                if (step.type === 'thought') {
+                    nodeClass = 'thought';
+                    headerText = '💡 Internal Thought';
+                    bodyText = step.content;
+                } else if (step.type === 'search_wikipedia') {
+                    nodeClass = 'search_wikipedia';
+                    headerText = '🔎 Wikipedia Lookup';
+                    bodyText = `Formulated query: "${step.query}"`;
+                } else if (step.type === 'search_result') {
+                    nodeClass = 'search_result';
+                    headerText = '📖 Retrieved Article Context';
+                    bodyText = `Extracted text snippet matching: "${step.query}"`;
+                    if (step.detail) {
+                        extraDetailHtml = `<div class="timeline-detail-box">${step.detail}</div>`;
+                    }
+                } else if (step.type === 'give_answer') {
+                    nodeClass = 'give_answer';
+                    headerText = '🏆 Grounded Conclusion Ready';
+                    bodyText = `Delivering final vetted answer back to UI.`;
+                }
+
+                stepElem.innerHTML = `
+                    <div class="timeline-node ${nodeClass}"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-header ${nodeClass}">${headerText}</div>
+                        <div class="timeline-body">${bodyText}</div>
+                        ${extraDetailHtml}
+                    </div>
+                `;
+                container.appendChild(stepElem);
+            });
+        }
+    </script>
+</body>
+</html>

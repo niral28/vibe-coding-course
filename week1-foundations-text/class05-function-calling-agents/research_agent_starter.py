@@ -70,10 +70,14 @@ def search_wikipedia(query):
     headers = {"User-Agent": "GSET-Vibe-Coding-Course/1.0 (classroom project)"}
 
     # 1) Find the best-matching article title for the search.
-    search = requests.get(api, headers=headers, params={
-        "action": "query", "list": "search", "srsearch": query,
-        "format": "json", "srlimit": 1,
-    }).json()
+    try:
+        response = requests.get(api, headers=headers, params={
+            "action": "query", "list": "search", "srsearch": query,
+            "format": "json", "srlimit": 1,
+        }, timeout=10)
+        search = response.json()
+    except (requests.exceptions.RequestException, ValueError) as e:
+        return f"Wikipedia search failed ({e}). Try again or use different keywords."
     hits = search.get("query", {}).get("search", [])
     if not hits:
         return f"No Wikipedia article was found for '{query}'. Try different keywords."
@@ -81,10 +85,14 @@ def search_wikipedia(query):
     title = hits[0]["title"]
 
     # 2) Get a clean, plain-text summary (the article's intro).
-    summary = requests.get(api, headers=headers, params={
-        "action": "query", "prop": "extracts", "exintro": True,
-        "explaintext": True, "titles": title, "redirects": 1, "format": "json",
-    }).json()
+    try:
+        response = requests.get(api, headers=headers, params={
+            "action": "query", "prop": "extracts", "exintro": True,
+            "explaintext": True, "titles": title, "redirects": 1, "format": "json",
+        }, timeout=10)
+        summary = response.json()
+    except (requests.exceptions.RequestException, ValueError) as e:
+        return f"Wikipedia lookup for '{title}' failed ({e}). Try again or use different keywords."
     pages = summary.get("query", {}).get("pages", {})
     page = next(iter(pages.values()), {})
     content = page.get("extract", "")[:2000]   # keep it short so the AI reads it easily
@@ -130,7 +138,7 @@ tools = [
             #   "Give the final answer to the user, based ONLY on the Wikipedia
             #   results, and include the source URL you used."
             # ----------------------------------------------------------------
-            "description": "TODO 2: describe this tool here",
+            "description": "Give the final answer to the user based only on the Wikipedia results, and include the source URL you used.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -167,7 +175,8 @@ def research():
     #       different keywords, or say it couldn't find it (never make it up).
     #     - When ready, it calls give_answer with the answer AND the source URL.
     # ------------------------------------------------------------------------
-    system_prompt = "TODO 1: write the AI's grounding instructions here"
+    system_prompt = "You are a careful and helpful research assistant. Do not use your own memory as facts may be outdated or wrong. You must call search_wikipedia to find facts first. Answer only based on what the search returned. If the search doesn't contain the answer, it should search again with different keywords. If that still doesn't work then say you could not find it. When ready, it calls give_answer with the answer AND the source URL."
+    #     "
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -184,7 +193,12 @@ def research():
         #         model=MODEL, messages=messages, tools=tools,
         #     )
         # --------------------------------------------------------------------
-        response = None  # TODO 3: replace None with the real model call (see hint)
+        response = client.chat.completions.create(
+            model=MODEL, messages=messages, tools=tools
+        )
+        
+        
+        
 
         ai_message = response.choices[0].message
         messages.append({
@@ -223,7 +237,9 @@ def research():
                 #     print("\n🤖", args["answer"])
                 #     print("📖 Source:", args["source_url"], "\n")
                 # ------------------------------------------------------------
-                pass  # TODO 4: print the answer and the source here
+                print("\n🤖", args["answer"])
+                print("📖 Source:", args["source_url"], "\n")
+
 
                 # ------------------------------------------------------------
                 # TODO 5: We have a grounded answer — stop.
