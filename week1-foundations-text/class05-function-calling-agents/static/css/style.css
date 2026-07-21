@@ -1,0 +1,756 @@
+/* 
+  AI Wordle Game Master CSS Stylesheet
+  ====================================
+  A premium, high-fidelity dark-mode interface with smooth 3D animations,
+  glowing glassmorphic panels, and responsive grid layouts.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+
+/* Color Variables */
+:root {
+  --bg-primary: #0a0e17;
+  --bg-secondary: #121824;
+  --bg-tertiary: #1b2336;
+  
+  --border-color: #2b354a;
+  --border-focus: #4f5f80;
+  
+  --text-main: #f0f3f8;
+  --text-muted: #8b9bb4;
+  
+  /* Wordle Tile & Key Colors */
+  --color-correct: #2ea043;    /* Premium Green */
+  --color-present: #d29922;    /* Premium Amber Yellow */
+  --color-absent: #384457;     /* Sleek Dark Gray */
+  --color-empty: #1c2433;      /* Unfilled tile background */
+  --color-tbd: #212c3d;        /* Typed but unsubmitted tile background */
+  
+  --shadow-glow: 0 0 20px rgba(46, 160, 67, 0.15);
+  --shadow-sidebar: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --transition-speed: 0.25s;
+}
+
+/* Base resets */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* App Layout Container */
+.app-container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex-grow: 1;
+  gap: 2rem;
+  padding: 1.5rem;
+  height: calc(100vh - 4rem);
+}
+
+@media (max-width: 968px) {
+  .app-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    overflow-y: auto;
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+}
+
+/* Header */
+header {
+  text-align: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  z-index: 10;
+}
+
+header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #fff 30%, #58a6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+header h1 span.badge {
+  font-size: 0.75rem;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, var(--color-correct), #1f7a31);
+  color: #fff;
+  padding: 0.2rem 0.6rem;
+  border-radius: 50px;
+  vertical-align: middle;
+  box-shadow: var(--shadow-glow);
+  letter-spacing: normal;
+  font-weight: 600;
+}
+
+/* Game Controls & Hard Mode Switch */
+.game-controls {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.2rem;
+  padding: 0 0.5rem;
+}
+
+.switch-container {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.2s;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-muted);
+  transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: rgba(46, 160, 67, 0.2);
+  border-color: var(--color-correct);
+  box-shadow: 0 0 10px rgba(46, 160, 67, 0.3);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+  background-color: var(--color-correct);
+}
+
+.switch-container:hover .switch-label {
+  color: var(--text-main);
+}
+
+/* ============================================================================
+   LEFT PANEL: Wordle Board & Virtual Keyboard
+   ============================================================================ */
+.game-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 968px) {
+  .game-panel {
+    padding: 1.5rem 1rem;
+    min-height: 480px;
+  }
+}
+
+/* Wordle Grid */
+.grid-container {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  aspect-ratio: 5 / 6;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+/* Individual Tiles */
+.tile {
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: var(--color-empty);
+  color: var(--text-main);
+  user-select: none;
+  transition: border-color var(--transition-speed), background-color var(--transition-speed);
+}
+
+@media (max-width: 480px) {
+  .tile {
+    font-size: 1.4rem;
+  }
+}
+
+/* Tile States */
+.tile[data-state="tbd"] {
+  background-color: var(--color-tbd);
+  border-color: var(--border-focus);
+  animation: pop 0.15s ease-in-out;
+}
+
+.tile[data-state="correct"] {
+  background-color: var(--color-correct);
+  border-color: var(--color-correct);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.tile[data-state="present"] {
+  background-color: var(--color-present);
+  border-color: var(--color-present);
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.tile[data-state="absent"] {
+  background-color: var(--color-absent);
+  border-color: var(--color-absent);
+  color: var(--text-muted);
+}
+
+/* Keyboard Styling */
+.keyboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 500px;
+  margin-top: 1.5rem;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  touch-action: manipulation;
+}
+
+.key {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  height: 52px;
+  flex-grow: 1;
+  max-width: 44px;
+  border-radius: 6px;
+  border: none;
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s, transform 0.05s, color 0.15s;
+}
+
+.key:active {
+  transform: scale(0.95);
+}
+
+.key.large {
+  max-width: 70px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  flex-grow: 1.5;
+}
+
+@media (max-width: 480px) {
+  .key {
+    height: 44px;
+    font-size: 0.85rem;
+  }
+  .key.large {
+    font-size: 0.7rem;
+  }
+}
+
+/* Keyboard Letter States */
+.key[data-state="correct"] {
+  background-color: var(--color-correct) !important;
+  color: white;
+}
+
+.key[data-state="present"] {
+  background-color: var(--color-present) !important;
+  color: white;
+}
+
+.key[data-state="absent"] {
+  background-color: var(--color-absent) !important;
+  color: var(--text-muted);
+}
+
+/* Hover effect for keys that haven't been resolved yet */
+.key:not([data-state]):hover {
+  background-color: var(--border-focus);
+}
+
+
+/* ============================================================================
+   RIGHT PANEL: AI Game Master Chat (Glassmorphic Sidebar)
+   ============================================================================ */
+.ai-sidebar {
+  display: flex;
+  flex-direction: column;
+  background: rgba(18, 24, 36, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sidebar);
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 968px) {
+  .ai-sidebar {
+    height: 500px;
+  }
+}
+
+.sidebar-header {
+  padding: 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: rgba(10, 14, 23, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.sidebar-header .ai-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f5f80, #1f2d3d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: 2px solid var(--border-focus);
+}
+
+.sidebar-header .header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header .header-info h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sidebar-header .header-info span {
+  font-size: 0.75rem;
+  color: #58a6ff;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-header .header-info span::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background-color: #2ea043;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #2ea043;
+}
+
+/* Chat Message Log */
+.chat-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar for Chat */
+.chat-container::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chat-container::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.message {
+  max-width: 85%;
+  padding: 0.85rem 1.1rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  animation: fadeIn 0.3s ease-out;
+  position: relative;
+}
+
+.message p {
+  margin-bottom: 0.4rem;
+}
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  border-bottom-left-radius: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.message.user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #1f6feb 0%, #114e9e 100%);
+  color: #fff;
+  border-bottom-right-radius: 2px;
+}
+
+.message .time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: block;
+  text-align: right;
+  margin-top: 0.3rem;
+}
+
+.message.user .time {
+  color: #8cc2ff;
+}
+
+/* Typing Indicator Animation */
+.typing-indicator {
+  display: none;
+  align-self: flex-start;
+  background-color: var(--bg-tertiary);
+  padding: 0.85rem 1.2rem;
+  border-radius: 14px;
+  border-bottom-left-radius: 2px;
+  border: 1px solid var(--border-color);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.typing-indicator span {
+  height: 8px;
+  width: 8px;
+  float: left;
+  margin: 0 2px;
+  background-color: var(--text-muted);
+  border-radius: 50%;
+  animation: bounceDot 1.3s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -1.1s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: -0.9s;
+}
+
+
+/* ============================================================================
+   MODALS AND UTILITIES
+   ============================================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(5, 7, 12, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.modal-content {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-content.won h2 {
+  color: var(--color-correct);
+}
+
+.modal-content.lost h2 {
+  color: var(--text-muted);
+}
+
+.secret-word-display {
+  margin: 1.5rem 0;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.secret-word-display span {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.15em;
+  background: var(--bg-tertiary);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  display: inline-block;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.stat-box {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.stat-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0.2rem;
+}
+
+.btn-primary {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--color-correct) 0%, #1f7a31 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.9rem 2rem;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+  width: 100%;
+  margin-top: 1rem;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 25px rgba(46, 160, 67, 0.3);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Screen reader / error notice banner */
+.toast {
+  position: absolute;
+  top: 20px;
+  background-color: #ff4a4f;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 15px rgba(255, 74, 79, 0.3);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-20px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+
+/* ============================================================================
+   ANIMATION KEYFRAMES
+   ============================================================================ */
+
+/* Flip animation for submitting a word */
+@keyframes flipIn {
+  0% {
+    transform: rotateX(0deg);
+    background-color: var(--color-empty);
+    border-color: var(--border-color);
+  }
+  45% {
+    transform: rotateX(90deg);
+    background-color: var(--color-empty);
+    border-color: var(--border-color);
+  }
+  55% {
+    transform: rotateX(90deg);
+  }
+  100% {
+    transform: rotateX(0deg);
+  }
+}
+
+/* Bounce pop-in for typing a letter */
+@keyframes pop {
+  0% {
+    transform: scale(0.8);
+    border-color: var(--border-color);
+  }
+  40% {
+    transform: scale(1.1);
+    border-color: var(--border-focus);
+  }
+  100% {
+    transform: scale(1);
+    border-color: var(--border-focus);
+  }
+}
+
+/* Horizontal shake for too-short or invalid guesses */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%, 55%, 85% { transform: translateX(-6px); }
+  35%, 75% { transform: translateX(6px); }
+}
+
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* Fade-in for chat bubbles */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typing bubble dots bouncing */
+@keyframes bounceDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Modal popping up */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
