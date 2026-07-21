@@ -377,6 +377,39 @@ the loop:
 
 ---
 
+## 📤 Save and share your finished work with Git
+
+When your app works, put it on **your own branch**. A branch is a separate copy of the
+project where you can safely save and share your changes without changing the shared `main`
+branch.
+
+> ⚠️ Never commit your `.env` file — it contains your private Gemini API key. The course
+> `.gitignore` should protect it, but always check the file list before committing.
+
+From the project’s main folder, run these commands one at a time:
+
+```bash
+git checkout -b class5-your-name
+git status
+git add week1-foundations-text/class05-function-calling-agents
+git commit -m "Build Class 5 AI agent app"
+git push -u origin class5-your-name
+```
+
+Replace `your-name` with your own name, using lowercase letters and hyphens — for example,
+`class5-maya-chen`.
+
+- `git checkout -b ...` creates your new branch and moves you onto it.
+- `git status` shows what will be saved. **Check that `.env` is not listed.**
+- `git add ...` selects only your Class 5 work, not unfinished work from other classes.
+- `git commit ...` saves a snapshot of that work.
+- `git push ...` uploads your branch to GitHub.
+
+After the push, GitHub may show a link to make a **Pull Request**. Only create one if your
+instructor asks for it; otherwise, your branch is your submitted backup.
+
+---
+
 ## 🔗 Handy links
 - [Google Antigravity tips (our cheat sheet)](../../docs/antigravity-tips.md)
 - [Class 3 code — Wordle & researcher examples](../class03-text-generation/intro_to_gemini.py)
