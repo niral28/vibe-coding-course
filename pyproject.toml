@@ -40,3 +40,8 @@ dependencies = [
 # so tell uv not to try to build it as a package.
 [tool.uv]
 package = false
+
+# Class dependencies are installed into the `gset` conda env (see CLAUDE.md),
+# not the uv-managed one — point the type checker at it directly.
+[tool.pyrefly]
+python_interpreter = "/Users/yashbhavsar/miniconda3/envs/gset/bin/python"

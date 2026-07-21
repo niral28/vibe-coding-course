@@ -13,17 +13,17 @@
 # Data Types - some key ones we'll be working with are Strings (text), Numbers (integers and decimals) and Booleans (true/false)
 # 
 # ### String (text)
-# name = "Alex"
-# favorite_color = "blue"
-# 
-# ### Numbers
-# age = 16
-# height = 5.8
-# 
-# ### Boolean (True/False)
-# is_student = True
-# 
-# 
+name = "Alex"
+favorite_color = "blue"
+
+### Numbers
+age = 17
+height = 5.8
+
+### Boolean (True/False)
+is_student = True
+
+
 
 # In[ ]:
 
