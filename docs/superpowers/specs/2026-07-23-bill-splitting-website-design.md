@@ -63,6 +63,8 @@ and explains the code simply to students.
 ## Error handling
 
 - Missing/invalid `GEMINI_API_KEY` → friendly banner on the page, no crash.
+  (The agent module reads the key at import time, so the web app checks for
+  the key first and only imports the agent module when it's present.)
 - Gemini/network errors → red `error` step in the Agent Console.
 - Unknown tool name → error JSON returned to the model (as in the terminal
   version).
