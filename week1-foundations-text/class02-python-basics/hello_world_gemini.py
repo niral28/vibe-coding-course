@@ -11,16 +11,17 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from datetime import date
 
 load_dotenv()
 
 # The client gets the API key from the environment variable `GEMINI_API_KEY`.
 client = genai.Client()
 
-response = client.models.generate_content(
-    model="gemini-3.5-flash", contents="Tell me a good joke about vibe coders!"
-)
-print(response.text)
+# response = client.models.generate_content(
+#     model="gemini-3.5-flash", contents="Tell me a good joke about vibe coders!"
+# )
+# print(response.text)
 
 
 
@@ -49,7 +50,7 @@ if response.choices[0]:
 # Let's create a more interactive example
 def chat_with_gemini(max_user_turns:int = 5):
     messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": f"You are a helpful assistant. Today's date is {date.today().isoformat()}."},
         ]
     count=0
     client = OpenAI(
