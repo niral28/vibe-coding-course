@@ -32,6 +32,20 @@ CORS(app)
 # Maps game_id -> session state dictionary
 GAMES = {}
 
+def load_valid_words():
+    """Load all valid 5-letter words from wordle.txt into a set for fast lookup."""
+    folder = os.path.dirname(__file__)
+    path = os.path.join(folder, "wordle.txt")
+    try:
+        with open(path, "r") as file:
+            return {line.strip().upper() for line in file if line.strip()}
+    except Exception as e:
+        print("Error loading wordle.txt:", e)
+        return set()
+
+VALID_WORDS = load_valid_words()
+
+
 def get_feedback_colors(guess, secret_word):
     """
     Computes a list of 5 colors ('correct', 'present', 'absent') representing 
@@ -125,6 +139,128 @@ end_game(reason="QUIT", answer="{secret_word}")
         "ai_message": GAMES[game_id]["ai_messages"][-1]
     })
 
+def process_game_guess(guess, game_id):
+    """
+    Core agentic Wordle evaluation loop. Feeds the guess to Gemini,
+    coordinates local tool invocation (validation, end-game state checks),
+    updates the in-memory GAMES dictionary, and returns the response payload.
+    """
+    game = GAMES[game_id]
+    game["guesses_used"] += 1
+    
+    # Add player's guess to the Gemini chat history
+    game["messages"].append({
+        "role": "user",
+        "content": f"My guess is: {guess}"
+    })
+    
+    # 1) Call Gemini with tools
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=game["messages"],
+        tools=tools,
+    )
+    
+    ai_message = response.choices[0].message
+    
+    # Track tool execution results
+    feedback_raw = ""
+    reason = None
+    
+    # Append assistant's thoughts/tool requests to chat history
+    game["messages"].append({
+        "role": "assistant",
+        "content": ai_message.content or "",
+        "tool_calls": ai_message.tool_calls,
+    })
+    
+    # 2) If Gemini requested any tool execution, process them
+    if ai_message.tool_calls:
+        for tool_call in ai_message.tool_calls:
+            name = tool_call.function.name
+            args = json.loads(tool_call.function.arguments)
+            
+            if name == "validate_word":
+                # Execute tool function
+                result = validate_word(args.get("guess", guess), game["secret_word"])
+                feedback_raw = result
+                
+                # Feed results back to Gemini
+                game["messages"].append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": name,
+                    "content": result,
+                })
+                
+            elif name == "end_game":
+                reason = args.get("reason", "LOST")
+                result = end_game(reason, args.get("answer", game["secret_word"]))
+                
+                # Feed results back to Gemini
+                game["messages"].append({
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "name": name,
+                    "content": result,
+                })
+                game["game_over"] = True
+                game["reason"] = reason
+        
+        # If we reached max guesses and the agent forgot to call end_game, enforce it
+        if game["guesses_used"] >= MAX_GUESSES and not game["game_over"]:
+            game["game_over"] = True
+            game["reason"] = "LOST"
+            
+        # 3) Get follow-up narrative comment from Gemini
+        follow_up = client.chat.completions.create(
+            model=MODEL,
+            messages=game["messages"],
+        )
+        
+        reply = follow_up.choices[0].message.content
+        game["messages"].append({
+            "role": "assistant",
+            "content": reply,
+        })
+        
+    else:
+        # If Gemini didn't make a tool call, fallback to manual evaluation
+        reply = ai_message.content or "I've checked your guess."
+        feedback_raw = validate_word(guess, game["secret_word"])
+        
+        if guess == game["secret_word"]:
+            game["game_over"] = True
+            game["reason"] = "WON"
+        elif game["guesses_used"] >= MAX_GUESSES:
+            game["game_over"] = True
+            game["reason"] = "LOST"
+            
+    # Generate the beautiful feedback color list for the UI
+    colors = get_feedback_colors(guess, game["secret_word"])
+    
+    # Cache results
+    game["guesses"].append({
+        "word": guess,
+        "colors": colors
+    })
+    game["ai_messages"].append(reply)
+    
+    # Structure the API response
+    response_data = {
+        "status": "success",
+        "guess": guess,
+        "colors": colors,
+        "feedback_raw": feedback_raw,
+        "ai_message": reply,
+        "guesses_used": game["guesses_used"],
+        "max_guesses": MAX_GUESSES,
+        "game_over": game["game_over"],
+        "reason": game["reason"],
+        "secret_word": game["secret_word"] if game["game_over"] else None
+    }
+    return response_data
+
 @app.route("/api/guess", methods=["POST"])
 def submit_guess():
     """Processes a player's 5-letter guess through the Gemini agent loop."""
@@ -142,127 +278,73 @@ def submit_guess():
     if len(guess) != 5 or not guess.isalpha():
         return jsonify({"error": "Guess must be a 5-letter English word containing only letters."}), 400
         
-    game["guesses_used"] += 1
-    
-    # Add player's guess to the Gemini chat history
-    game["messages"].append({
-        "role": "user",
-        "content": f"My guess is: {guess}"
-    })
-    
+    if guess not in VALID_WORDS:
+        return jsonify({"error": "Not in word list"}), 400
+        
     try:
-        # 1) Call Gemini with tools
-        response = client.chat.completions.create(
-            model=MODEL,
-            messages=game["messages"],
-            tools=tools,
-        )
-        
-        ai_message = response.choices[0].message
-        
-        # Track tool execution results
-        game_was_ended = False
-        feedback_raw = ""
-        reason = None
-        
-        # Append assistant's thoughts/tool requests to chat history
-        game["messages"].append({
-            "role": "assistant",
-            "content": ai_message.content or "",
-            "tool_calls": ai_message.tool_calls,
-        })
-        
-        # 2) If Gemini requested any tool execution, process them
-        if ai_message.tool_calls:
-            for tool_call in ai_message.tool_calls:
-                name = tool_call.function.name
-                args = json.loads(tool_call.function.arguments)
-                
-                if name == "validate_word":
-                    # Execute tool function
-                    result = validate_word(args.get("guess", guess), game["secret_word"])
-                    feedback_raw = result
-                    
-                    # Feed results back to Gemini
-                    game["messages"].append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": name,
-                        "content": result,
-                    })
-                    
-                elif name == "end_game":
-                    reason = args.get("reason", "LOST")
-                    result = end_game(reason, args.get("answer", game["secret_word"]))
-                    
-                    # Feed results back to Gemini
-                    game["messages"].append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "name": name,
-                        "content": result,
-                    })
-                    game["game_over"] = True
-                    game["reason"] = reason
-                    game_was_ended = True
-            
-            # If we reached max guesses and the agent forgot to call end_game, enforce it
-            if game["guesses_used"] >= MAX_GUESSES and not game["game_over"]:
-                game["game_over"] = True
-                game["reason"] = "LOST"
-                
-            # 3) Get follow-up narrative comment from Gemini
-            follow_up = client.chat.completions.create(
-                model=MODEL,
-                messages=game["messages"],
-            )
-            
-            reply = follow_up.choices[0].message.content
-            game["messages"].append({
-                "role": "assistant",
-                "content": reply,
-            })
-            
-        else:
-            # If Gemini didn't make a tool call, fallback to manual evaluation
-            reply = ai_message.content or "I've checked your guess."
-            feedback_raw = validate_word(guess, game["secret_word"])
-            
-            if guess == game["secret_word"]:
-                game["game_over"] = True
-                game["reason"] = "WON"
-            elif game["guesses_used"] >= MAX_GUESSES:
-                game["game_over"] = True
-                game["reason"] = "LOST"
-                
-        # Generate the beautiful feedback color list for the UI
-        colors = get_feedback_colors(guess, game["secret_word"])
-        
-        # Cache results
-        game["guesses"].append({
-            "word": guess,
-            "colors": colors
-        })
-        game["ai_messages"].append(reply)
-        
-        # Structure the API response
-        response_data = {
-            "status": "success",
-            "guess": guess,
-            "colors": colors,
-            "feedback_raw": feedback_raw,
-            "ai_message": reply,
-            "guesses_used": game["guesses_used"],
-            "max_guesses": MAX_GUESSES,
-            "game_over": game["game_over"],
-            "reason": game["reason"],
-            "secret_word": game["secret_word"] if game["game_over"] else None
-        }
+        response_data = process_game_guess(guess, game_id)
         return jsonify(response_data)
-        
     except Exception as e:
         print("Error in Gemini API / Agentic Loop:", e)
         return jsonify({"error": f"Failed to talk to Gemini API: {str(e)}"}), 500
+
+@app.route("/api/ai-guess", methods=["POST"])
+def ai_guess():
+    """Asks the AI to generate a strategic Wordle guess and processes it."""
+    game_id = session.get("game_id")
+    if not game_id or game_id not in GAMES:
+        return jsonify({"error": "Game session not found. Please start a new game."}), 400
+        
+    game = GAMES[game_id]
+    if game["game_over"]:
+        return jsonify({"error": "Game is already over.", "game_over": True}), 400
+        
+    # Ask the AI to make a strategic guess
+    history_prompt = "You are playing Wordle. Your objective is to guess the secret 5-letter word. Here is the feedback from previous attempts:\n"
+    if not game["guesses"]:
+        history_prompt += "- No guesses made yet. This is your first guess. Choose a strong starting word like CRANE, SLATE, or TRAIN.\n"
+    else:
+        for i, g in enumerate(game["guesses"]):
+            # Format nicely for Gemini to process easily
+            history_prompt += f"- Guess {i+1}: {g['word']} -> Feedbacks: {g['colors']}\n"
+            
+    history_prompt += "\nSelect the next best strategic 5-letter guess word. Output ONLY the 5-letter word in uppercase. No explanations, no conversation, no punctuation. Just the word."
+    
+    try:
+        suggestion_response = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": "You are a professional Wordle player. Analyze the hints (correct spots, present letters, absent letters) and suggest the best 5-letter English word to guess next. Output ONLY the word."},
+                {"role": "user", "content": history_prompt}
+            ],
+            temperature=0.7,
+        )
+        
+        raw_word = suggestion_response.choices[0].message.content or ""
+        # Clean the response to find a 5-letter word
+        clean_word = "".join(c for c in raw_word if c.isalpha()).upper()
+        # Find the first sequence of 5 letters
+        import re
+        match = re.search(r'[A-Z]{5}', clean_word)
+        suggested_word = match.group(0) if match else "CRANE"
+        
+        # Verify AI's guess is in the dictionary; if not, fall back to a random valid word
+        if suggested_word not in VALID_WORDS:
+            used_words = {g['word'] for g in game["guesses"]}
+            available = list(VALID_WORDS - used_words)
+            if available:
+                suggested_word = random.choice(available)
+            else:
+                suggested_word = "CRANE"
+                
+        # Now process the suggested word
+        response_data = process_game_guess(suggested_word, game_id)
+        return jsonify(response_data)
+        
+    except Exception as e:
+        print("Error in AI guess generation:", e)
+        return jsonify({"error": f"Failed to generate AI guess: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     print("🤖 Starting AI Wordle Flask App...")

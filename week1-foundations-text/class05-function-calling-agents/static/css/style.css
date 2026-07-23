@@ -107,14 +107,90 @@ header h1 span.badge {
   font-weight: 600;
 }
 
-/* Game Controls & Hard Mode Switch */
+/* Game Controls (Hard Mode & AI Mode Toggles) */
 .game-controls {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1.2rem;
   padding: 0 0.5rem;
 }
+
+/* AI Controls Panel */
+.ai-controls-panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.75rem 1.2rem;
+  margin-bottom: 1.2rem;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.btn-ai-action {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  background: linear-gradient(135deg, #1f6feb 0%, #114e9e 100%);
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.2rem;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+  box-shadow: 0 0 15px rgba(31, 111, 235, 0.25);
+}
+
+.btn-ai-action:hover:not(:disabled) {
+  filter: brightness(1.15);
+  box-shadow: 0 0 20px rgba(31, 111, 235, 0.4);
+}
+
+.btn-ai-action:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.btn-ai-action:disabled {
+  background: var(--color-absent);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.autoplay-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.autoplay-container input {
+  cursor: pointer;
+  accent-color: #1f6feb;
+  width: 16px;
+  height: 16px;
+}
+
+.autoplay-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: color 0.15s;
+}
+
+.autoplay-container:hover .autoplay-label {
+  color: var(--text-main);
+}
+
 
 .switch-container {
   display: flex;
@@ -754,3 +830,208 @@ header h1 span.badge {
     transform: scale(1);
   }
 }
+
+
+/* ============================================================================
+   START SCREEN MODE SELECTION MENU
+   ============================================================================ */
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(10, 12, 16, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.4s ease-out;
+  padding: 1.5rem;
+}
+
+.menu-card {
+  width: 100%;
+  max-width: 580px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-glow), 0 10px 45px rgba(0, 0, 0, 0.6);
+  animation: scaleUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.menu-logo {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--text-main) 30%, #58a6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.03em;
+}
+
+.menu-badge {
+  background: linear-gradient(135deg, #1f6feb 0%, #114e9e 100%);
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  font-weight: 700;
+  -webkit-text-fill-color: #fff;
+  display: inline-block;
+}
+
+.menu-subtitle {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.menu-option-card {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s, background-color 0.25s;
+  width: 100%;
+}
+
+.menu-option-card:hover {
+  transform: translateY(-2px);
+  background-color: rgba(31, 111, 235, 0.04);
+}
+
+#btn-mode-normal:hover {
+  border-color: #2ea043;
+  box-shadow: 0 0 20px rgba(46, 160, 67, 0.15);
+}
+
+#btn-mode-hard:hover {
+  border-color: #ff4a4f;
+  box-shadow: 0 0 20px rgba(255, 74, 79, 0.15);
+}
+
+#btn-mode-ai:hover {
+  border-color: #1f6feb;
+  box-shadow: 0 0 20px rgba(31, 111, 235, 0.15);
+}
+
+.menu-option-card:active {
+  transform: scale(0.99);
+}
+
+.option-icon {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background-color: var(--bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.option-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.option-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.option-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.btn-change-mode {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, transform 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-change-mode:hover {
+  border-color: var(--text-muted);
+  color: var(--text-main);
+}
+
+.btn-change-mode:active {
+  transform: scale(0.97);
+}
+
+.mode-badge-status {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 30px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mode-badge-status.normal {
+  background-color: rgba(46, 160, 67, 0.12);
+  color: #2ea043;
+  border: 1px solid rgba(46, 160, 67, 0.25);
+}
+
+.mode-badge-status.hard {
+  background-color: rgba(255, 74, 79, 0.12);
+  color: #ff4a4f;
+  border: 1px solid rgba(255, 74, 79, 0.25);
+}
+
+.mode-badge-status.ai {
+  background-color: rgba(31, 111, 235, 0.12);
+  color: #58a6ff;
+  border: 1px solid rgba(31, 111, 235, 0.25);
+}
+

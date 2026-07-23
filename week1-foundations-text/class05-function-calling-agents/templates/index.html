@@ -7,13 +7,51 @@
   
   <!-- SEO & Meta Tags -->
   <meta name="description" content="A high-fidelity Wordle-style game featuring an agentic AI Game Master powered by Gemini. View live hints, custom chats, and smart play commentary.">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.3">
 </head>
 <body>
+  <!-- Mode Selection Overlay Menu -->
+  <div id="menu-overlay" class="menu-overlay">
+    <div class="menu-card">
+      <div class="menu-header">
+        <h2 class="menu-logo">AI WORDLE <span class="menu-badge">AGENT v2.5</span></h2>
+        <p class="menu-subtitle">Choose your gameplay environment to begin:</p>
+      </div>
+
+      <div class="menu-options">
+        <!-- Normal Mode Card -->
+        <button class="menu-option-card" id="btn-mode-normal">
+          <div class="option-icon">👤</div>
+          <div class="option-details">
+            <h3 class="option-title">Normal Mode</h3>
+            <p class="option-desc">Play traditional Wordle. Assisted by live Gemini AI comments and conversational narrative.</p>
+          </div>
+        </button>
+
+        <!-- Hard Mode Card -->
+        <button class="menu-option-card" id="btn-mode-hard">
+          <div class="option-icon">⚔️</div>
+          <div class="option-details">
+            <h3 class="option-title">Hard Mode</h3>
+            <p class="option-desc">Strict logical constraints. Any clues (green correct, yellow present, or grey absent) must be respected in future guesses.</p>
+          </div>
+        </button>
+
+        <!-- AI Mode Card -->
+        <button class="menu-option-card" id="btn-mode-ai">
+          <div class="option-icon">🤖</div>
+          <div class="option-details">
+            <h3 class="option-title">Autonomous AI Mode</h3>
+            <p class="option-desc">Relax and watch Gemini formulate strategic guesses autonomously to solve the board as fast as possible.</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Game Header -->
   <header>
-    <h1>AI WORDLE <span class="badge">AGENT v2.0</span></h1>
+    <h1>AI WORDLE <span class="badge">AGENT v2.5</span></h1>
   </header>
 
   <!-- Main Game Container -->
@@ -21,14 +59,18 @@
     
     <!-- Left Column: Traditional Wordle gameplay -->
     <section class="game-panel">
-      <!-- Game Controls (Hard Mode Toggle) -->
+      <!-- Game Controls (Menu Navigation & Active Status) -->
       <div class="game-controls">
-        <label class="switch-container">
-          <span class="switch-label">Hard Mode</span>
-          <div class="switch">
-            <input type="checkbox" id="hard-mode-toggle">
-            <span class="slider"></span>
-          </div>
+        <button id="btn-change-mode" class="btn-change-mode">🏠 Change Mode</button>
+        <span id="current-mode-display" class="mode-badge-status normal">👤 Normal Mode</span>
+      </div>
+
+      <!-- AI Play Control Center (Only visible when AI Mode is active) -->
+      <div id="ai-control-center" class="ai-controls-panel" style="display: none;">
+        <button id="btn-ai-step" class="btn-ai-action">🤖 Let AI Guess</button>
+        <label class="autoplay-container">
+          <input type="checkbox" id="autoplay-toggle" checked>
+          <span class="autoplay-label">Auto-Play</span>
         </label>
       </div>
 
@@ -187,6 +229,6 @@
   <canvas id="confetti-canvas" style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:99;"></canvas>
 
   <!-- Game Scripts -->
-  <script src="{{ url_for('static', filename='js/app.js') }}?v=2.1"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}?v=2.3"></script>
 </body>
 </html>

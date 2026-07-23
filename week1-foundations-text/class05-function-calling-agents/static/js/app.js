@@ -4,6 +4,16 @@
   Coordinates gameplay state, captures physical and virtual keystrokes,
   triggers animations (flipping, bouncing, shaking), handles REST API
   requests to the Flask backend, and renders conversational logs.
+  
+  NOW FEATURING:
+  - Landing Menu Overlay: Choose Normal, Hard, or AI Mode at start
+  - Strict Hard Mode Constraints: Enforces Correct (Green), Present (Yellow),
+    and completely forbids Absent (Grey) letters in future guesses.
+  - Autonomous AI Mode: Selectable directly from menu; types and solves
+    autonomously using honest clue logic.
+  - Interactive Canvas Confetti Explosions.
+  - Staggered Typewriter Simulator for AI choices.
+  - Menu Back Navigation dynamically resetting game states.
 */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -11,14 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const MAX_ROWS = 6;
   const WORD_LENGTH = 5;
   
+  let activeMode = 'normal'; // 'normal' | 'hard' | 'ai'
   let currentRow = 0;
   let currentLetterIndex = 0;
   let currentGuess = '';
-  let isInputLocked = false;
+  let isInputLocked = false; // Prevents spamming double-submissions
   let isGameOver = false;
+  let autoplayTimeoutId = null;
+  
+  // Hard Mode constraints
+  let correctHints = Array(5).fill(null); // stores letter in correct index, e.g. [null, 'R', null, null, null]
+  let presentHints = new Set();           // stores set of present characters, e.g. {'A', 'E'}
+  let absentLetters = new Set();          // stores set of completely absent characters, e.g. {'T', 'S'}
   
   // Keep track of evaluated letter keys to update the keyboard colors
-  // Values: 'correct' > 'present' > 'absent'
   const keyStateMap = {}; 
 
   // --- DOM Elements ---
@@ -27,6 +43,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const chatBox = document.getElementById('chat-box');
   const typingIndicator = document.getElementById('typing-indicator');
   const toast = document.getElementById('toast-message');
+  
+  // Menu Overlay Elements
+  const menuOverlay = document.getElementById('menu-overlay');
+  const btnModeNormal = document.getElementById('btn-mode-normal');
+  const btnModeHard = document.getElementById('btn-mode-hard');
+  const btnModeAi = document.getElementById('btn-mode-ai');
+  
+  // Controls & Active Badges
+  const btnChangeMode = document.getElementById('btn-change-mode');
+  const currentModeDisplay = document.getElementById('current-mode-display');
+  const aiControlCenter = document.getElementById('ai-control-center');
+  const btnAiStep = document.getElementById('btn-ai-step');
+  const autoplayToggle = document.getElementById('autoplay-toggle');
   
   // Modal elements
   const modal = document.getElementById('game-over-modal');
@@ -37,6 +66,109 @@ document.addEventListener('DOMContentLoaded', () => {
   const statStatus = document.getElementById('stat-status');
   const btnRestart = document.getElementById('btn-restart');
 
+  // --- Confetti Canvas Animation System ---
+  const confettiCanvas = document.getElementById('confetti-canvas');
+  const ctx = confettiCanvas.getContext('2d');
+  let confettiActive = false;
+  let particles = [];
+  const colorsList = ['#2ea043', '#d29922', '#58a6ff', '#ff4a4f', '#ff82b2', '#ffeb3b'];
+
+  function resizeCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * confettiCanvas.width;
+      this.y = Math.random() * confettiCanvas.height - confettiCanvas.height;
+      this.r = Math.random() * 6 + 4;
+      this.d = Math.random() * confettiCanvas.height;
+      this.color = colorsList[Math.floor(Math.random() * colorsList.length)];
+      this.tilt = Math.random() * 10 - 5;
+      this.tiltAngleIncremental = Math.random() * 0.07 + 0.02;
+      this.tiltAngle = 0;
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.lineWidth = this.r / 2;
+      ctx.strokeStyle = this.color;
+      ctx.moveTo(this.x + this.tilt + this.r / 2, this.y);
+      ctx.lineTo(this.x + this.tilt, this.y + this.tilt + this.r / 2);
+      ctx.stroke();
+    }
+
+    update() {
+      this.tiltAngle += this.tiltAngleIncremental;
+      this.y += (Math.cos(this.d) + 3 + this.r / 2) / 2;
+      this.x += Math.sin(this.tiltAngle);
+      this.tilt = Math.sin(this.tiltAngle - this.r / 2) * 5;
+
+      if (this.y > confettiCanvas.height) {
+        if (confettiActive) {
+          this.x = Math.random() * confettiCanvas.width;
+          this.y = -20;
+          this.tilt = Math.random() * 10 - 5;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  function startConfetti() {
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    particles = [];
+    confettiActive = true;
+    for (let i = 0; i < 150; i++) {
+      particles.push(new Particle());
+    }
+    animateConfetti();
+  }
+
+  function stopConfetti() {
+    confettiActive = false;
+  }
+
+  function animateConfetti() {
+    if (!confettiActive && particles.length === 0) {
+      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      return;
+    }
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    particles = particles.filter(p => {
+      p.draw();
+      return p.update();
+    });
+    requestAnimationFrame(animateConfetti);
+  }
+
+  // --- Menu Launcher ---
+  function selectGameMode(mode) {
+    activeMode = mode;
+    
+    // Hide menu screen
+    menuOverlay.style.display = 'none';
+    
+    // Set active badge representation
+    if (mode === 'normal') {
+      currentModeDisplay.textContent = '👤 Normal Mode';
+      currentModeDisplay.className = 'mode-badge-status normal';
+    } else if (mode === 'hard') {
+      currentModeDisplay.textContent = '⚔️ Hard Mode';
+      currentModeDisplay.className = 'mode-badge-status hard';
+    } else if (mode === 'ai') {
+      currentModeDisplay.textContent = '🤖 AI Mode';
+      currentModeDisplay.className = 'mode-badge-status ai';
+    }
+    
+    // Launch game!
+    initGame();
+  }
+
   // --- Initializer ---
   async function initGame() {
     // Reset state variables
@@ -45,6 +177,17 @@ document.addEventListener('DOMContentLoaded', () => {
     currentGuess = '';
     isInputLocked = false;
     isGameOver = false;
+    
+    // Clear active autoplay timers
+    if (autoplayTimeoutId) {
+      clearTimeout(autoplayTimeoutId);
+      autoplayTimeoutId = null;
+    }
+    
+    // Reset Hard Mode constraints
+    correctHints = Array(5).fill(null);
+    presentHints.clear();
+    absentLetters.clear();
     
     // Clear key evaluation map
     for (const key in keyStateMap) {
@@ -65,6 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
       key.removeAttribute('data-state');
     });
     
+    // Stop confetti if it was running
+    stopConfetti();
+    
     // Clear chat box except for a clean start
     chatBox.innerHTML = '';
     hideTypingIndicator();
@@ -72,6 +218,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Hide modal
     modal.style.display = 'none';
     modalContent.className = 'modal-content';
+    
+    // Show AI Play control bar ONLY if AI Mode is selected
+    if (activeMode === 'ai') {
+      aiControlCenter.style.display = 'flex';
+      btnAiStep.disabled = false;
+    } else {
+      aiControlCenter.style.display = 'none';
+    }
     
     // Show typing indicator, contact server for new game
     showTypingIndicator();
@@ -87,6 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'success') {
         appendChatBubble('ai', data.ai_message);
+        
+        // If AI Mode is active and Auto-Play is toggled, schedule the first step!
+        if (activeMode === 'ai' && autoplayToggle.checked) {
+          scheduleNextAiMove();
+        }
       } else {
         appendChatBubble('ai', '⚠️ Error initializing game: ' + (data.error || 'Unknown error'));
       }
@@ -100,7 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Core Gameplay Actions ---
 
   function handleKeyPress(key) {
-    if (isInputLocked || isGameOver) return;
+    // Block physical hardware triggers if board is locked, game is over, or AI is currently playing
+    if (isInputLocked || isGameOver || activeMode === 'ai') return;
     
     key = key.toUpperCase();
     
@@ -142,7 +302,39 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     
-    // Lock board during evaluating
+    // --- Hard Mode Constraints Verification ---
+    if (activeMode === 'hard') {
+      // 1st Rule: Green Clues must be placed in their exact spots
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        if (correctHints[i] !== null && currentGuess[i] !== correctHints[i]) {
+          const ordinal = ["1st", "2nd", "3rd", "4th", "5th"];
+          showToast(`${ordinal[i]} letter must be ${correctHints[i]}`);
+          shakeRow(currentRow);
+          return;
+        }
+      }
+      
+      // 2nd Rule: Yellow Clues must exist somewhere in subsequent guesses
+      for (const char of presentHints) {
+        if (!currentGuess.includes(char)) {
+          showToast(`Guess must contain ${char}`);
+          shakeRow(currentRow);
+          return;
+        }
+      }
+
+      // 3rd Rule: Completely Grey/Absent letters MUST NOT be used in subsequent guesses
+      for (let i = 0; i < WORD_LENGTH; i++) {
+        const char = currentGuess[i];
+        if (absentLetters.has(char)) {
+          showToast(`"${char}" cannot be used (marked absent)`);
+          shakeRow(currentRow);
+          return;
+        }
+      }
+    }
+    
+    // Lock board during evaluation
     isInputLocked = true;
     showTypingIndicator();
     
@@ -159,48 +351,160 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       
       if (response.status !== 200) {
-        // Handle server error (e.g. invalid word or network failure)
         hideTypingIndicator();
         showToast(data.error || 'Server error');
         shakeRow(currentRow);
         isInputLocked = false;
         
-        // Remove the user bubble since it was invalid
         const lastUserBubble = chatBox.querySelector('.message.user:last-child');
         if (lastUserBubble) lastUserBubble.remove();
-        
         return;
       }
       
-      // We have successful evaluation! Let's play the visual animations.
-      await revealRowColors(currentRow, data.colors);
-      
-      // Update our keyboard state
-      updateKeyboardColors(currentGuess, data.colors);
-      
-      // Append the AI dialogue
-      hideTypingIndicator();
-      appendChatBubble('ai', data.ai_message);
-      
-      // Check for Game Ending conditions
-      if (data.game_over) {
-        isGameOver = true;
-        setTimeout(() => {
-          showGameOverModal(data.reason, data.secret_word, data.guesses_used);
-        }, 1500); // Give the player a moment to read the AI comment
-      } else {
-        // Unlock and go to next row
-        currentRow++;
-        currentLetterIndex = 0;
-        currentGuess = '';
-        isInputLocked = false;
-      }
+      await handleEvaluatedGuessResponse(data);
       
     } catch (error) {
       console.error('Error submitting guess:', error);
       hideTypingIndicator();
       showToast('Network error');
       isInputLocked = false;
+    }
+  }
+
+  // --- Autonomous AI Mode Actions ---
+
+  async function executeAiStep() {
+    if (isGameOver || isInputLocked) return;
+    
+    // Lock controls
+    isInputLocked = true;
+    btnAiStep.disabled = true;
+    showTypingIndicator();
+    
+    appendChatBubble('ai', "🤖 *I am consulting the database of previous hints and selecting my next move...*");
+    
+    try {
+      const response = await fetch('/api/ai-guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      const data = await response.json();
+      hideTypingIndicator();
+      
+      if (response.status !== 200) {
+        showToast(data.error || 'AI generation failed');
+        btnAiStep.disabled = false;
+        isInputLocked = false;
+        return;
+      }
+      
+      const word = data.guess;
+      
+      // Simulate "typing" the AI's selected word onto the grid before flipping!
+      await typeAiWordIntoRow(currentRow, word);
+      
+      // Submit and evaluate
+      appendChatBubble('user', `AI guessed: ${word}`);
+      await handleEvaluatedGuessResponse(data);
+      
+      // Schedule next autoplay move if enabled and game is not over
+      if (autoplayToggle.checked && !isGameOver) {
+        scheduleNextAiMove();
+      }
+      
+    } catch (error) {
+      console.error('Error getting AI guess:', error);
+      hideTypingIndicator();
+      showToast('AI request failed');
+      btnAiStep.disabled = false;
+      isInputLocked = false;
+    }
+  }
+
+  function typeAiWordIntoRow(row, word) {
+    return new Promise(resolve => {
+      let charIndex = 0;
+      function typeChar() {
+        if (charIndex < word.length) {
+          const letter = word[charIndex];
+          const tile = document.getElementById(`tile-${row}-${charIndex}`);
+          tile.textContent = letter;
+          tile.setAttribute('data-state', 'tbd');
+          charIndex++;
+          setTimeout(typeChar, 180); // Staggered key input pace
+        } else {
+          setTimeout(resolve, 300); // Wait briefly before starting flip
+        }
+      }
+      typeChar();
+    });
+  }
+
+  function scheduleNextAiMove() {
+    if (autoplayTimeoutId) clearTimeout(autoplayTimeoutId);
+    autoplayTimeoutId = setTimeout(() => {
+      if (!isGameOver && activeMode === 'ai' && autoplayToggle.checked) {
+        executeAiStep();
+      }
+    }, 2500); // 2.5s delay to let animations complete and bubbles be read
+  }
+
+  // Common response-handling block shared by both Player and AI guesses!
+  async function handleEvaluatedGuessResponse(data) {
+    const guessWord = data.guess;
+    
+    // We have successful evaluation! Play the visual animations.
+    await revealRowColors(currentRow, data.colors);
+    
+    // Save constraints for Hard Mode on success (Green, Yellow, and Grey/Absent)
+    for (let i = 0; i < WORD_LENGTH; i++) {
+      const char = guessWord[i];
+      if (data.colors[i] === 'correct') {
+        correctHints[i] = char;
+        absentLetters.delete(char);
+      } else if (data.colors[i] === 'present') {
+        presentHints.add(char);
+        absentLetters.delete(char);
+      } else if (data.colors[i] === 'absent') {
+        // Only mark completely absent if it is not correct or present in another index (handles double letter edge cases)
+        if (!correctHints.includes(char) && !presentHints.has(char)) {
+          absentLetters.add(char);
+        }
+      }
+    }
+    
+    // Update keyboard letters
+    updateKeyboardColors(guessWord, data.colors);
+    
+    // Append conversational response
+    hideTypingIndicator();
+    appendChatBubble('ai', data.ai_message);
+    
+    // Check for game completion
+    if (data.game_over) {
+      isGameOver = true;
+      if (autoplayTimeoutId) clearTimeout(autoplayTimeoutId);
+      
+      if (data.reason === 'WON') {
+        startConfetti();
+        appendChatBubble('ai', '🎉 CONGRATULATIONS! The Wordle puzzle has been solved! Spectacular! 🏆');
+      }
+      
+      setTimeout(() => {
+        showGameOverModal(data.reason, data.secret_word, data.guesses_used);
+      }, 1500);
+    } else {
+      // Advance row
+      currentRow++;
+      currentLetterIndex = 0;
+      currentGuess = '';
+      
+      // Release visual locks
+      isInputLocked = false;
+      if (activeMode === 'ai') {
+        btnAiStep.disabled = false;
+      }
     }
   }
 
@@ -213,20 +517,17 @@ document.addEventListener('DOMContentLoaded', () => {
       );
       
       tiles.forEach((tile, i) => {
-        // Sequential delayed 3D flip animation
         setTimeout(() => {
           tile.style.animation = 'flipIn 0.5s ease-in-out forwards';
           
-          // Midway through the flip (when edge on at 90deg), change colors
           setTimeout(() => {
             tile.setAttribute('data-state', colors[i]);
           }, 250);
           
-          // When the last tile is done flipping, resolve the Promise
           if (i === WORD_LENGTH - 1) {
             setTimeout(resolve, 500);
           }
-        }, i * 150); // 150ms staggered waterfall delay
+        }, i * 150);
       });
     });
   }
@@ -241,7 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const currentStatus = keyStateMap[char];
       
-      // Wordle priority logic: Correct (Green) > Present (Yellow) > Absent (Gray)
       if (color === 'correct') {
         keyStateMap[char] = 'correct';
         keyBtn.setAttribute('data-state', 'correct');
@@ -262,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function shakeRow(row) {
     const rowEl = document.getElementById(`row-${row}`);
     rowEl.classList.add('shake');
-    // Remove the class after animation completes so it can shake again later
     setTimeout(() => {
       rowEl.classList.remove('shake');
     }, 400);
@@ -273,7 +572,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.classList.add('show');
     setTimeout(() => {
       toast.classList.remove('show');
-    }, 2000);
+    }, 2500);
   }
 
   // --- Chat Dialogue Helpers ---
@@ -282,13 +581,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const bubble = document.createElement('div');
     bubble.classList.add('message', sender);
     
-    // Support basic line breaks from AI dialogue
     const formattedText = text.replace(/\n/g, '<br>');
     bubble.innerHTML = `<p>${formattedText}</p><span class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
     
     chatBox.appendChild(bubble);
-    
-    // Auto-scroll chat window to bottom
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
@@ -327,7 +623,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle physical hardware keyboard events
   document.addEventListener('keydown', e => {
-    // Ignore keystrokes when typing inside inputs or textareas (if any are added)
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     
     const key = e.key;
@@ -340,9 +635,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Menu Mode selections
+  btnModeNormal.addEventListener('click', () => selectGameMode('normal'));
+  btnModeHard.addEventListener('click', () => selectGameMode('hard'));
+  btnModeAi.addEventListener('click', () => selectGameMode('ai'));
+
+  // Go back to Mode selection Menu screen
+  btnChangeMode.addEventListener('click', () => {
+    // Halt any active autoplay timeouts
+    if (autoplayTimeoutId) {
+      clearTimeout(autoplayTimeoutId);
+      autoplayTimeoutId = null;
+    }
+    stopConfetti();
+    
+    // Unveil Menu card
+    menuOverlay.style.display = 'flex';
+  });
+
+  // Auto-play checkbox listener
+  autoplayToggle.addEventListener('change', () => {
+    if (autoplayToggle.checked && activeMode === 'ai' && !isGameOver && !isInputLocked) {
+      executeAiStep();
+    } else if (!autoplayToggle.checked) {
+      if (autoplayTimeoutId) {
+        clearTimeout(autoplayTimeoutId);
+        autoplayTimeoutId = null;
+      }
+    }
+  });
+
+  // AI Step button listener
+  btnAiStep.addEventListener('click', executeAiStep);
+
   // Handle play again restart request
   btnRestart.addEventListener('click', initGame);
 
-  // --- Bootstrap application ---
-  initGame();
+  // --- Initial Launch Setup ---
+  // Renders the mode overlay immediately and lets user pick!
+  menuOverlay.style.display = 'flex';
 });
