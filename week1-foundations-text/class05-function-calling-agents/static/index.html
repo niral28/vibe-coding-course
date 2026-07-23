@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧾 Bill-Splitting Agent</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #1c2333; --muted: #6b7280;
+    --accent: #4f46e5; --accent-soft: #eef2ff; --green: #059669;
+    --console-bg: #101425; --console-ink: #d7ddf3; --red: #dc2626;
+    --radius: 14px; --shadow: 0 1px 3px rgba(16,20,37,.08), 0 8px 24px rgba(16,20,37,.06);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.5;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ---------- header ---------- */
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 { font-size: 1.9rem; letter-spacing: -.02em; }
+  header p { color: var(--muted); margin-top: 4px; }
+  .model-badge {
+    display: inline-block; margin-top: 10px; padding: 4px 12px;
+    background: var(--accent-soft); color: var(--accent); border-radius: 999px;
+    font-size: .8rem; font-weight: 600;
+  }
+  .banner {
+    background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;
+    border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ---------- layout ---------- */
+  .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px; display: flex; flex-direction: column;
+  }
+  .panel h2 { font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+  /* ---------- running tab ---------- */
+  .tab-card {
+    background: var(--accent-soft); border-radius: 10px; padding: 10px 12px;
+    font-size: .88rem; margin-bottom: 10px;
+  }
+  .tab-card .total { font-weight: 700; color: var(--accent); }
+  .tab-card ul { list-style: none; margin-top: 4px; }
+  .tab-card li { display: flex; justify-content: space-between; color: var(--muted); }
+
+  /* ---------- chat ---------- */
+  #chat-log { flex: 1; min-height: 320px; max-height: 440px; overflow-y: auto; padding: 4px 2px; }
+  .bubble { max-width: 85%; padding: 9px 13px; border-radius: 14px; margin: 6px 0; font-size: .93rem; white-space: pre-wrap; }
+  .bubble.user { background: var(--accent); color: #fff; margin-left: auto; border-bottom-right-radius: 4px; }
+  .bubble.ai { background: #f1f2f7; border-bottom-left-radius: 4px; }
+  .chip {
+    display: inline-block; font-size: .74rem; font-family: ui-monospace, monospace;
+    background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa;
+    border-radius: 999px; padding: 2px 10px; margin: 3px 0;
+  }
+  form { display: flex; gap: 8px; margin-top: 10px; }
+  input[type=text] {
+    flex: 1; padding: 10px 14px; border: 1px solid #d9dce6; border-radius: 10px;
+    font-size: .95rem; outline: none;
+  }
+  input[type=text]:focus { border-color: var(--accent); }
+  button {
+    padding: 10px 18px; border: none; border-radius: 10px; background: var(--accent);
+    color: #fff; font-weight: 600; cursor: pointer; font-size: .9rem;
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  .hint { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+  .reset { background: transparent; color: var(--muted); font-weight: 500; padding: 6px 0; align-self: flex-start; }
+
+  /* ---------- agent console ---------- */
+  .console { background: var(--console-bg); color: var(--console-ink); }
+  .console h2 { color: #fff; }
+  #console-log {
+    flex: 1; min-height: 380px; max-height: 520px; overflow-y: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem;
+  }
+  .step { padding: 7px 10px; border-radius: 8px; margin: 5px 0; border-left: 3px solid transparent; word-break: break-word; }
+  .step.api { background: rgba(99,102,241,.16); border-left-color: #818cf8; }
+  .step.tool { background: rgba(245,158,11,.12); border-left-color: #f59e0b; }
+  .step.result { background: rgba(16,185,129,.10); border-left-color: #10b981; }
+  .step.answer { background: rgba(255,255,255,.07); border-left-color: #e5e7eb; }
+  .step.error { background: rgba(220,38,38,.15); border-left-color: var(--red); }
+  .step.turn { color: #8b93b8; border-left: none; margin-top: 12px; font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; }
+  .pulse {
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: #818cf8; margin-right: 6px; animation: pulse 1s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+  .console-empty { color: #8b93b8; padding: 20px 10px; }
+
+  /* ---------- how it works ---------- */
+  .how { margin-top: 28px; }
+  .how h2 { text-align: center; font-size: 1.3rem; margin-bottom: 14px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; font-size: .88rem; }
+  .card h3 { font-size: .95rem; margin-bottom: 6px; }
+  .card p { color: var(--muted); margin-bottom: 8px; }
+  .card pre {
+    background: var(--console-bg); color: var(--console-ink); border-radius: 8px;
+    padding: 10px; font-size: .72rem; overflow-x: auto; line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧾 Bill-Splitting Agent</h1>
+    <p>An AI agent that never does math itself — it calls real Python tools, and you can watch every step.</p>
+    <span class="model-badge" id="model-badge">Powered by the Gemini API</span>
+  </header>
+
+  <div class="banner" id="key-banner">
+    ⚠️ <strong>No GEMINI_API_KEY found.</strong> Copy <code>shared/.env.example</code> to
+    <code>.env</code>, add your key, then restart <code>bill_splitting_web.py</code>.
+  </div>
+
+  <div class="layout">
+    <!-- ================= chat panel ================= -->
+    <section class="panel">
+      <h2>💬 Chat</h2>
+      <div class="tab-card" id="tab-card">🧾 Running tab: <span class="total">$0.00</span> — nothing yet, add an expense!</div>
+      <div id="chat-log"></div>
+      <form id="chat-form">
+        <input type="text" id="chat-input" placeholder='Try: "add $20 for pizza"' autocomplete="off">
+        <button type="submit" id="send-btn">Send</button>
+      </form>
+      <div class="hint">💡 Tip: mention a country — <em>"we're in Japan — split between 4 people"</em> — and the AI applies local tax &amp; tipping customs.</div>
+      <button class="reset" id="reset-btn">↺ Reset tab &amp; conversation</button>
+    </section>
+
+    <!-- ================= agent console ================= -->
+    <aside class="panel console">
+      <h2>🛰️ Agent Console <span style="font-weight:400;font-size:.75rem;color:#8b93b8">— live view of the agentic loop</span></h2>
+      <div id="console-log"><div class="console-empty">Waiting for your first message… every Gemini API call and tool call will appear here as it happens.</div></div>
+    </aside>
+  </div>
+
+  <!-- ================= how it works ================= -->
+  <section class="how">
+    <h2>How the code works</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>① Function calling</h3>
+        <p>The AI is told about two Python functions. Instead of doing math (which LLMs are bad at), it replies with <em>"please run this tool with these arguments"</em> — and our Python actually runs it.</p>
+        <pre>add_expense(description, amount)
+  → adds to the tab, returns total
+
+calculate_split(num_people,
+                tip_percent,
+                tax_percent)
+  → tax + tip, split per person</pre>
+      </div>
+      <div class="card">
+        <h3>② The agentic loop</h3>
+        <p>One message from you can take several API round-trips. The server keeps calling Gemini until it stops asking for tools and answers you — that's the loop in the console.</p>
+        <pre>for step in range(6):
+    response = gemini(messages, tools)
+    if no tool_calls:
+        show final answer; break
+    run the tool
+    send result back to Gemini</pre>
+      </div>
+      <div class="card">
+        <h3>③ Country smarts</h3>
+        <p>There's no country database here. The system prompt tells Gemini: if the user names a country, use <em>your own knowledge</em> of its tax rate and tipping culture, and pass those numbers to the tool.</p>
+        <pre>"we're in Japan" →
+  Gemini knows: 10% tax,
+  tipping isn't customary
+  → calculate_split(4, 0, 10)</pre>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const chatLog = document.getElementById("chat-log");
+  const consoleLog = document.getElementById("console-log");
+  const form = document.getElementById("chat-form");
+  const input = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-btn");
+  let turnCount = 0;
+
+  const esc = (s) => String(s).replace(/[&<>"']/g,
+    (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  // ---------- rendering helpers ----------
+  function bubble(role, text) {
+    const div = document.createElement("div");
+    div.className = "bubble " + role;
+    div.textContent = text;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  function chip(text) {
+    const div = document.createElement("div");
+    div.innerHTML = `<span class="chip">🔧 ${esc(text)}</span>`;
+    chatLog.appendChild(div);
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  function consoleStep(cls, html) {
+    const empty = consoleLog.querySelector(".console-empty");
+    if (empty) empty.remove();
+    // Freeze any previous pulsing dot — that request has moved on.
+    consoleLog.querySelectorAll(".pulse").forEach(p => p.classList.remove("pulse"));
+    const div = document.createElement("div");
+    div.className = "step " + cls;
+    div.innerHTML = html;
+    consoleLog.appendChild(div);
+    consoleLog.scrollTop = consoleLog.scrollHeight;
+    return div;
+  }
+
+  function renderTab(expenses, total) {
+    const card = document.getElementById("tab-card");
+    if (!expenses || expenses.length === 0) {
+      card.innerHTML = '🧾 Running tab: <span class="total">$0.00</span> — nothing yet, add an expense!';
+      return;
+    }
+    const items = expenses.map(e =>
+      `<li><span>${esc(e.description)}</span><span>$${e.amount.toFixed(2)}</span></li>`).join("");
+    card.innerHTML = `🧾 Running tab: <span class="total">$${total.toFixed(2)}</span><ul>${items}</ul>`;
+  }
+
+  // ---------- one streamed event from the agentic loop ----------
+  function handleEvent(ev) {
+    if (ev.type === "api_call") {
+      consoleStep("api",
+        `<span class="pulse"></span>📤 Calling Gemini API — request #${ev.request_number} <em>(${esc(ev.model)})</em>`);
+    } else if (ev.type === "tool_call") {
+      consoleStep("tool", `🔧 Gemini asked for tool: <strong>${esc(ev.name)}</strong>(${esc(JSON.stringify(ev.args))})`);
+      chip(`${ev.name}(${JSON.stringify(ev.args)})`);
+    } else if (ev.type === "tool_result") {
+      consoleStep("result", `📥 Python ran <strong>${esc(ev.name)}</strong> → ${esc(JSON.stringify(ev.result))}`);
+      renderTab(ev.expenses, ev.running_total);
+    } else if (ev.type === "final_answer") {
+      consoleStep("answer", "💬 Final answer — no more tool calls, the loop ends.");
+      bubble("ai", ev.content);
+      renderTab(ev.expenses, ev.running_total);
+    } else if (ev.type === "error") {
+      consoleStep("error", `❌ ${esc(ev.message)}`);
+      bubble("ai", "⚠️ Something went wrong: " + ev.message);
+    }
+  }
+
+  // ---------- send a message and stream the loop ----------
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const message = input.value.trim();
+    if (!message || sendBtn.disabled) return;
+    input.value = "";
+    sendBtn.disabled = true;
+    bubble("user", message);
+    turnCount += 1;
+    consoleStep("turn", `— turn ${turnCount}: "${esc(message)}" —`);
+
+    try {
+      const res = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf("\n\n")) !== -1) {
+          const chunk = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          if (chunk.startsWith("data: ")) handleEvent(JSON.parse(chunk.slice(6)));
+        }
+      }
+    } catch (err) {
+      handleEvent({ type: "error", message: err.message });
+    }
+    consoleLog.querySelectorAll(".pulse").forEach(p => p.classList.remove("pulse"));
+    sendBtn.disabled = false;
+    input.focus();
+  });
+
+  // ---------- reset ----------
+  document.getElementById("reset-btn").addEventListener("click", async () => {
+    await fetch("/reset", { method: "POST" });
+    chatLog.innerHTML = "";
+    consoleLog.innerHTML = '<div class="console-empty">Tab reset — waiting for your next message…</div>';
+    turnCount = 0;
+    renderTab([], 0);
+  });
+
+  // ---------- initial load ----------
+  (async () => {
+    const state = await (await fetch("/state")).json();
+    if (!state.api_key_present) {
+      document.getElementById("key-banner").style.display = "block";
+      input.disabled = true;
+      sendBtn.disabled = true;
+      return;
+    }
+    document.getElementById("model-badge").textContent =
+      "Powered by the Gemini API — " + state.model;
+    renderTab(state.expenses, state.running_total);
+  })();
+</script>
+</body>
+</html>
