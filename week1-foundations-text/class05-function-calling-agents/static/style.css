@@ -1,0 +1,503 @@
+/* 
+   Wordle Saloon — Retro CSS Design System 🤠🌵
+   =============================================
+   Inspired by weathered paper, rough wood panels, 
+   shiny sheriff stars, and frontier saloon boards.
+*/
+
+:root {
+    /* Rich, curated desert-frontier color palette */
+    --color-bg-dark: #19120c;        /* Deep night trail */
+    --color-bg-light: #2c1e14;       /* Saloon mahogany */
+    --color-wood: #3e2a1b;           /* Weathered cedar */
+    --color-wood-border: #1f140b;    /* Dark iron straps */
+    --color-parchment: #eedec5;      /* Vintage letter paper */
+    --color-gold: #cca43b;           /* Sunset gold nugget */
+    --color-rust: #b25d2c;           /* Desert sandstone */
+    
+    /* Wordle status colors styled for the west */
+    --color-correct: #3e6e47;        /* Cactus green */
+    --color-present: #b2812c;        /* Raw amber gold */
+    --color-absent: #2e2620;         /* Charcoal iron ore */
+    --color-tile-empty: #483425;     /* Dark cedar */
+    
+    /* Font styles */
+    --font-heading: 'Rye', serif;
+    --font-typewriter: 'Special Elite', monospace;
+    --font-ui: 'Outfit', sans-serif;
+}
+
+/* Clear default styles & set up basic trail */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--color-bg-dark);
+    background-image: 
+        radial-gradient(circle at center, rgba(44, 30, 20, 0.6) 0%, rgba(25, 18, 12, 1) 100%),
+        repeating-linear-gradient(rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+    background-size: auto, 100% 4px;
+    color: var(--color-parchment);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+/* Core Container */
+.saloon-container {
+    width: 100%;
+    max-width: 550px;
+    background: #251810;
+    border: 5px double #5a3e22;
+    border-radius: 12px;
+    box-shadow: 
+        0 15px 35px rgba(0,0,0,0.8),
+        inset 0 0 20px rgba(0,0,0,0.5);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+/* Saloon Sign Header */
+.saloon-header {
+    text-align: center;
+    border-bottom: 3px double #5a3e22;
+    padding-bottom: 12px;
+}
+
+.main-title {
+    font-family: var(--font-heading);
+    font-size: 2.8rem;
+    color: var(--color-gold);
+    text-shadow: 
+        2px 2px 0px #1a0f08,
+        4px 4px 0px rgba(0, 0, 0, 0.4),
+        0px 0px 12px rgba(204, 164, 59, 0.3);
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-family: var(--font-typewriter);
+    font-size: 0.95rem;
+    color: #a8947f;
+    letter-spacing: 4px;
+    margin-top: 4px;
+    font-weight: bold;
+}
+
+/* Sheriff Tex speech panel */
+.sheriff-panel {
+    display: flex;
+    background: #1d120a;
+    border: 2px solid #3c2518;
+    border-radius: 8px;
+    padding: 12px 16px;
+    gap: 16px;
+    align-items: center;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.6);
+}
+
+.sheriff-avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.sheriff-badge {
+    font-size: 2.5rem;
+    animation: badge-float 3s ease-in-out infinite alternate;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    cursor: default;
+}
+
+.sheriff-label {
+    font-family: var(--font-heading);
+    font-size: 0.65rem;
+    color: var(--color-gold);
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.sheriff-speech-bubble {
+    flex-grow: 1;
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    color: #f3eae1;
+    line-height: 1.4;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+}
+
+/* Typewriter animation support */
+.typewriter-text {
+    border-right: 2px solid var(--color-gold);
+    animation: blink-caret 0.75s step-end infinite;
+    padding-right: 4px;
+}
+
+/* Wordle Game Grid */
+.grid-container {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 8px;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+/* 3D Flip Tile Structures */
+.tile {
+    width: 58px;
+    height: 58px;
+    perspective: 1000px; /* Enable 3D perspective */
+}
+
+.tile-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Flipped class that triggers the 3D rotation */
+.tile.flipped .tile-inner {
+    transform: rotateY(180deg);
+}
+
+.tile-front, .tile-back {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    backface-visibility: hidden; /* Hide the back when rotated */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.tile-front {
+    background: var(--color-tile-empty);
+    color: var(--color-parchment);
+    border: 2px solid var(--color-wood-border);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+}
+
+.tile-back {
+    transform: rotateY(180deg); /* Start rotated on back */
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Tile state styles */
+.tile-back.correct {
+    background-color: var(--color-correct);
+    border: 2px solid #57995e;
+}
+
+.tile-back.present {
+    background-color: var(--color-present);
+    border: 2px solid #d19f39;
+}
+
+.tile-back.absent {
+    background-color: var(--color-absent);
+    border: 2px solid #4a3c35;
+    color: #8c7e73;
+}
+
+/* Typing popup animation */
+.tile.pop {
+    animation: pop-letter 0.15s ease-in-out;
+}
+
+/* Shaking animation when an invalid word is entered */
+.grid-row.shake {
+    animation: shake-row 0.5s ease-in-out;
+}
+
+/* Interactive Keyboard */
+.keyboard-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.key-btn {
+    flex-grow: 1;
+    max-width: 44px;
+    height: 48px;
+    background: var(--color-wood);
+    color: var(--color-parchment);
+    border: 1px solid var(--color-wood-border);
+    border-bottom: 4px solid #1f140a;
+    border-radius: 4px;
+    font-family: var(--font-ui);
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, border 0.15s, transform 0.05s;
+}
+
+.key-btn:hover {
+    background: #503522;
+}
+
+.key-btn:active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+}
+
+/* Large keys like ENTER and BACK */
+.key-btn.large {
+    max-width: 68px;
+    font-size: 0.8rem;
+    font-family: var(--font-typewriter);
+}
+
+/* Keyboard color status updates */
+.key-btn.correct {
+    background-color: var(--color-correct);
+    border-color: #57995e;
+    border-bottom-color: #2b5435;
+}
+
+.key-btn.present {
+    background-color: var(--color-present);
+    border-color: #d19f39;
+    border-bottom-color: #825f20;
+}
+
+.key-btn.absent {
+    background-color: var(--color-absent);
+    border-color: #4a3c35;
+    border-bottom-color: #171310;
+    color: #6e5f56;
+}
+
+/* SADDLE UP Buttons */
+.controls-panel {
+    display: flex;
+    justify-content: center;
+    border-top: 2px solid #3c2518;
+    padding-top: 16px;
+}
+
+.btn-saddle-up {
+    font-family: var(--font-heading);
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #d89f38 0%, #b27a20 100%);
+    color: #1d1105;
+    border: 2px solid #5a3c0f;
+    border-bottom: 5px solid #422a07;
+    border-radius: 6px;
+    padding: 10px 24px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.1s, box-shadow 0.2s;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.btn-saddle-up:hover {
+    background: linear-gradient(135deg, #e7aa3f 0%, #c48825 100%);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.6);
+}
+
+.btn-saddle-up:active {
+    transform: translateY(3px);
+    border-bottom-width: 2px;
+}
+
+/* Error Alert Banner */
+.error-banner {
+    background-color: #7b1d16;
+    color: #ffd9d6;
+    border: 1px solid #c22e23;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-family: var(--font-typewriter);
+    font-size: 0.85rem;
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s, opacity 0.3s linear;
+}
+
+.error-banner.visible {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Modal Popup Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Wanted Poster design card */
+.wanted-poster {
+    background: #e4c49b;
+    background-image: 
+        radial-gradient(rgba(0,0,0,0.05) 15%, transparent 16%),
+        radial-gradient(rgba(0,0,0,0.05) 15%, transparent 16%);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
+    color: #1a0f08;
+    border: 8px solid #cca43b;
+    outline: 4px solid #1a0f08;
+    border-radius: 2px;
+    width: 90%;
+    max-width: 380px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    transform: scale(0.8) rotate(-2deg);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.overlay.visible .wanted-poster {
+    transform: scale(1) rotate(0deg);
+}
+
+.wanted-header {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    letter-spacing: 6px;
+    margin-bottom: -4px;
+    color: #1a0f08;
+    border-bottom: 3px dashed #1a0f08;
+    padding-bottom: 2px;
+}
+
+.wanted-sub {
+    font-family: var(--font-typewriter);
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+
+.wanted-middle h2 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: #a81c07;
+    margin-bottom: 8px;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.4);
+}
+
+.wanted-body-text {
+    font-family: var(--font-typewriter);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #382415;
+    margin-bottom: 20px;
+}
+
+.wanted-word-box {
+    background: rgba(0, 0, 0, 0.08);
+    border: 2px dashed #1a0f08;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 24px;
+}
+
+.word-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #614631;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.word-display {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    letter-spacing: 4px;
+    color: #1a0f08;
+}
+
+.poster-btn {
+    width: 100%;
+}
+
+/* CSS KEYFRAME ANIMATIONS */
+
+/* Sheriff Badge floating */
+@keyframes badge-float {
+    0% { transform: translateY(0) rotate(-4deg); }
+    100% { transform: translateY(-5px) rotate(4deg); }
+}
+
+/* Typing pop */
+@keyframes pop-letter {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); border-color: #6a4d33; }
+    100% { transform: scale(1); }
+}
+
+/* Row shake on error */
+@keyframes shake-row {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-8px); }
+    30%, 60%, 90% { transform: translateX(8px); }
+}
+
+/* Typewriter blinking cursor */
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--color-gold); }
+}

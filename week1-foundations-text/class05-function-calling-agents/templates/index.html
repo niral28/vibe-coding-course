@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Saloon — Sheriff Showdown 🤠🌵</title>
+    
+    <!-- Link to premium western Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Special+Elite&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom stylesheet for Wild West aesthetics -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="saloon-container">
+        
+        <!-- Saloon Sign / Header -->
+        <header class="saloon-header">
+            <h1 class="main-title">WORDLE SALOON</h1>
+            <p class="subtitle">🌵 THE FRONT-TIER SHOWDOWN 🌵</p>
+        </header>
+
+        <!-- Sheriff Tex / Agentic Chat Panel -->
+        <div class="sheriff-panel">
+            <div class="sheriff-avatar-container">
+                <div class="sheriff-badge">⭐</div>
+                <div class="sheriff-label">SHERIFF TEX</div>
+            </div>
+            <div class="sheriff-speech-bubble" id="sheriff-bubble">
+                <p id="sheriff-text" class="typewriter-text">Howdy partner! Fetching the secret word from the range. Prepare to draw...</p>
+            </div>
+        </div>
+
+        <!-- Wordle Game Grid -->
+        <main class="grid-container" id="wordle-grid">
+            <!-- 6 rows of 5 letter tiles -->
+            <!-- These are generated dynamically in JS, but having them structured ensures semantic stability -->
+            <!-- We'll inject them with JavaScript for perfect visual management -->
+        </main>
+
+        <!-- Error / Warning Banner -->
+        <div class="error-banner" id="error-banner"></div>
+
+        <!-- On-Screen Virtual Keyboard -->
+        <div class="keyboard-container" id="virtual-keyboard">
+            <!-- Rows are generated dynamically to keep the HTML clean and editable -->
+        </div>
+
+        <!-- Restart & Controls panel -->
+        <div class="controls-panel">
+            <button class="btn-saddle-up" id="btn-restart">🐴 SADDLE UP (NEW GAME)</button>
+        </div>
+
+        <!-- Game Over Modal (Wanted Poster Style) -->
+        <div class="overlay" id="game-over-modal">
+            <div class="wanted-poster">
+                <div class="wanted-header">WANTED</div>
+                <div class="wanted-sub">DEAD OR ALIVE</div>
+                <div class="wanted-middle">
+                    <h2 id="wanted-outcome">VICTORY PARTNER!</h2>
+                    <p class="wanted-body-text" id="wanted-message">You cracked the safe! Sheriff Tex is highly impressed by your quick trigger finger.</p>
+                    <div class="wanted-word-box">
+                        <span class="word-label">SECRET WORD WAS</span>
+                        <div class="word-display" id="wanted-answer">#####</div>
+                    </div>
+                </div>
+                <button class="btn-saddle-up poster-btn" id="btn-modal-restart">🐴 TRY AGAIN, PARTNER</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Main client script to control animations, keyboard events and Flask API communication -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
