@@ -228,6 +228,11 @@ def run_bill_splitting_agent():
                     "name": name,
                     "content": result,
                 })
+        else:
+            # The for loop finished all 6 steps without ever `break`-ing out
+            # via a final answer — the AI was still calling tools. Let the
+            # user know instead of silently doing nothing this turn.
+            print("\n🤖 (I hit my 6-step limit for this turn — try asking again.)\n")
 
 
 if __name__ == "__main__":

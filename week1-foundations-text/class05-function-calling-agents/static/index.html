@@ -270,6 +270,10 @@ calculate_split(num_people,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
+      // If the server bailed before it could even start streaming (e.g. the
+      // /chat route's 500 when the API key is missing), there's no SSE body
+      // to read — surface it as a plain error instead of a confusing hang.
+      if (!res.ok) throw new Error("Server error (" + res.status + ")");
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";

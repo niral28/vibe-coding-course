@@ -131,27 +131,43 @@ def chat():
             # Otherwise, run whichever tool(s) the AI asked for.
             for tool_call in ai_message.tool_calls:
                 name = tool_call.function.name
-                args = json.loads(tool_call.function.arguments)
-                yield sse({"type": "tool_call", "name": name, "args": args})
 
-                if name == "add_expense":
-                    result = add_expense(args["description"], args["amount"])
-                elif name == "calculate_split":
-                    result = calculate_split(
-                        args["num_people"],
-                        args.get("tip_percent", 0),
-                        args.get("tax_percent", 0),
-                    )
-                else:
-                    result = json.dumps({"error": f"Unknown tool {name}"})
+                # 🛡️ Gemini can send malformed args (e.g. amount as a string),
+                # and our own tool functions can raise too. If either blows up
+                # here, we must NOT let the exception kill the generator — that
+                # would leave this assistant message's tool_calls unanswered,
+                # and every future turn would then error out at the API until
+                # the tab is reset. So we catch it, hand the error back to
+                # Gemini as if it were a tool result (same pattern as the
+                # "Unknown tool" branch below), and let the loop continue —
+                # the AI gets a chance to apologize or try again.
+                try:
+                    args = json.loads(tool_call.function.arguments)
+                    yield sse({"type": "tool_call", "name": name, "args": args})
 
-                yield sse({
-                    "type": "tool_result",
-                    "name": name,
-                    "result": json.loads(result),
-                    "expenses": expenses,
-                    "running_total": running_total(),
-                })
+                    if name == "add_expense":
+                        result = add_expense(args["description"], args["amount"])
+                    elif name == "calculate_split":
+                        result = calculate_split(
+                            args["num_people"],
+                            args.get("tip_percent", 0),
+                            args.get("tax_percent", 0),
+                        )
+                    else:
+                        result = json.dumps({"error": f"Unknown tool {name}"})
+
+                    yield sse({
+                        "type": "tool_result",
+                        "name": name,
+                        "result": json.loads(result),
+                        "expenses": expenses,
+                        "running_total": running_total(),
+                    })
+                except Exception as exc:
+                    result = json.dumps({"error": f"Tool {name} failed: {exc}"})
+                    yield sse({"type": "error",
+                               "message": f"Tool {name} failed: {exc}"})
+
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
