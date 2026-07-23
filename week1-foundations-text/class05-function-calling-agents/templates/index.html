@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adaptive Math Tutor 🧮✨</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Canvas Confetti Library for celebrations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- HEADER / BRANDING -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="icon">🧮</span>
+                <span class="title">MathTutor <span class="badge-ai">AI Agent</span></span>
+            </div>
+            <div class="subtitle">Adaptive Gemini AI Math Tutor • Grades 3 to 8</div>
+        </header>
+
+        <!-- =================================================================== -->
+        <!-- SCREEN 1: START SCREEN                                              -->
+        <!-- =================================================================== -->
+        <section id="start-screen" class="screen active">
+            <div class="card glass-card start-card">
+                <div class="card-header">
+                    <h2>🎯 Start Your Practice Session</h2>
+                    <p>Customize your topics, difficulty, and time limit to get started!</p>
+                </div>
+
+                <!-- Difficulty Selector -->
+                <div class="form-group">
+                    <label class="form-label">1. Choose Starting Difficulty Level:</label>
+                    <div class="level-grid">
+                        <label class="level-option selected">
+                            <input type="radio" name="difficulty" value="1" checked>
+                            <span class="level-badge level-1">⭐ Level 1</span>
+                            <span class="level-desc">Grade 3 (Basic + / -)</span>
+                        </label>
+                        <label class="level-option">
+                            <input type="radio" name="difficulty" value="2">
+                            <span class="level-badge level-2">⭐⭐ Level 2</span>
+                            <span class="level-desc">Grade 4 (Bigger numbers)</span>
+                        </label>
+                        <label class="level-option">
+                            <input type="radio" name="difficulty" value="3">
+                            <span class="level-badge level-3">⭐⭐⭐ Level 3</span>
+                            <span class="level-desc">Grade 5 (Multiplication)</span>
+                        </label>
+                        <label class="level-option">
+                            <input type="radio" name="difficulty" value="4">
+                            <span class="level-badge level-4">⚡ Level 4</span>
+                            <span class="level-desc">Grade 6-7 (Division)</span>
+                        </label>
+                        <label class="level-option">
+                            <input type="radio" name="difficulty" value="5">
+                            <span class="level-badge level-5">🔥 Level 5</span>
+                            <span class="level-desc">Grade 8 (Multi-step)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Topics Selector -->
+                <div class="form-group">
+                    <label class="form-label">2. Select Topics to Practice (Choose 1 or more):</label>
+                    <div class="topics-grid">
+                        <label class="topic-checkbox checked">
+                            <input type="checkbox" name="topics" value="addition" checked>
+                            <span class="topic-icon">➕</span>
+                            <span class="topic-title">Addition</span>
+                        </label>
+                        <label class="topic-checkbox checked">
+                            <input type="checkbox" name="topics" value="subtraction" checked>
+                            <span class="topic-icon">➖</span>
+                            <span class="topic-title">Subtraction</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="multiplication">
+                            <span class="topic-icon">✖️</span>
+                            <span class="topic-title">Multiplication</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="division">
+                            <span class="topic-icon">➗</span>
+                            <span class="topic-title">Division</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="mixed">
+                            <span class="topic-icon">🔀</span>
+                            <span class="topic-title">Mixed Basic</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="two-step">
+                            <span class="topic-icon">⚡</span>
+                            <span class="topic-title">Two-Step</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="fractions">
+                            <span class="topic-icon">🍕</span>
+                            <span class="topic-title">Fractions</span>
+                        </label>
+                        <label class="topic-checkbox">
+                            <input type="checkbox" name="topics" value="decimals">
+                            <span class="topic-icon">🪙</span>
+                            <span class="topic-title">Decimals</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Session Mode Selector (Either / Or) -->
+                <div class="form-group">
+                    <label class="form-label">3. Choose Session Limit Mode (Either / Or):</label>
+                    
+                    <div class="mode-selector-grid">
+                        <!-- Option A: Fixed Questions -->
+                        <div class="mode-card selected" id="mode-card-questions">
+                            <label class="mode-radio-label">
+                                <input type="radio" name="session_mode" value="questions" checked>
+                                <span class="mode-title">🎯 Fixed Number of Questions</span>
+                            </label>
+                            <p class="mode-desc">Solve a set number of problems at your own pace.</p>
+                            <div class="mode-input-wrap">
+                                <label for="max-questions" class="select-label">Questions:</label>
+                                <select id="max-questions" class="form-select">
+                                    <option value="5">5 Questions (Quick)</option>
+                                    <option value="8" selected>8 Questions (Standard)</option>
+                                    <option value="10">10 Questions</option>
+                                    <option value="15">15 Questions</option>
+                                    <option value="20">20 Questions (Marathon)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Option B: Time Limit Speed Run -->
+                        <div class="mode-card" id="mode-card-time">
+                            <label class="mode-radio-label">
+                                <input type="radio" name="session_mode" value="time">
+                                <span class="mode-title">⏱️ Time Limit (Speed Run!)</span>
+                            </label>
+                            <p class="mode-desc">Solve as many questions as you can before time runs out!</p>
+                            <div class="mode-input-wrap">
+                                <label for="time-limit" class="select-label">Time Limit:</label>
+                                <select id="time-limit" class="form-select" disabled>
+                                    <option value="1">1 Minute</option>
+                                    <option value="2">2 Minutes</option>
+                                    <option value="3" selected>3 Minutes</option>
+                                    <option value="5">5 Minutes</option>
+                                    <option value="10">10 Minutes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-note">
+                    ⏱️ <strong>Timer Rule:</strong> If time runs out while you're in the middle of a question, you get to finish that question before the session ends!
+                </div>
+
+                <button id="btn-start" class="btn btn-primary btn-large">
+                    Start Math Session 🚀
+                </button>
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- SCREEN 2: QUIZ SCREEN                                               -->
+        <!-- =================================================================== -->
+        <section id="quiz-screen" class="screen hidden">
+            
+            <!-- Status Bar / Pills -->
+            <div class="quiz-status-bar">
+                <div class="pill pill-question">
+                    <span class="pill-label">Problem</span>
+                    <span id="quiz-progress-text" class="pill-val">1 of 8</span>
+                </div>
+                <div class="pill pill-level">
+                    <span class="pill-label">Level</span>
+                    <span id="quiz-level-text" class="pill-val">⭐ 1</span>
+                </div>
+                <div class="pill pill-streak">
+                    <span class="pill-label">Streak</span>
+                    <span id="quiz-streak-text" class="pill-val">🔥 0</span>
+                </div>
+                <div class="pill pill-timer">
+                    <span class="pill-label">Session Time</span>
+                    <span id="quiz-timer-text" class="pill-val">00:00</span>
+                </div>
+                <div class="pill pill-qtime">
+                    <span class="pill-label">Question Time</span>
+                    <span id="quiz-qtime-text" class="pill-val">0s</span>
+                </div>
+            </div>
+
+            <!-- Over-time Notification Banner -->
+            <div id="time-warning-banner" class="banner banner-warning hidden">
+                ⌛ <strong>Time's up for the overall session!</strong> Take your time to finish this current question, then your final summary will appear!
+            </div>
+
+            <!-- Main Question Card -->
+            <div class="card glass-card quiz-card">
+                <div class="topic-tag">
+                    <span id="quiz-topic-badge" class="badge">Addition</span>
+                </div>
+
+                <div class="problem-display">
+                    <div id="problem-text" class="problem-math">12 + 8</div>
+                    <div class="problem-equals">= ?</div>
+                </div>
+
+                <!-- Answer Form -->
+                <form id="answer-form" class="answer-form">
+                    <div class="input-wrapper">
+                        <input type="text" id="answer-input" class="answer-input" placeholder="Type your answer..." autocomplete="off" autofocus>
+                        <button type="submit" id="btn-submit" class="btn btn-success">
+                            Submit ➔
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- AI Tutor Chat / Feedback Card -->
+            <div id="tutor-card" class="card tutor-card">
+                <div class="tutor-avatar">🤖</div>
+                <div class="tutor-content">
+                    <div class="tutor-name">AI Math Tutor (Gemini)</div>
+                    <div id="tutor-message" class="tutor-bubble">
+                        Hi! I'm here to help. Type your answer above! If you get stuck, I'll give you hints without giving away the answer.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="quiz-footer">
+                <button id="btn-quit" class="btn btn-secondary btn-small">
+                    🛑 Stop Session Early
+                </button>
+            </div>
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- SCREEN 3: SUMMARY SCREEN                                            -->
+        <!-- =================================================================== -->
+        <section id="summary-screen" class="screen hidden">
+            <div class="card glass-card summary-card">
+                
+                <div class="summary-header">
+                    <div id="summary-badge" class="summary-badge">🎓 Session Completed</div>
+                    <h2 id="summary-title">Awesome Practice!</h2>
+                    <p id="summary-subtitle">Here is your complete performance breakdown.</p>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card card-score">
+                        <div class="metric-icon">🏆</div>
+                        <div id="metric-accuracy" class="metric-value">100%</div>
+                        <div class="metric-label">Accuracy Rate</div>
+                        <div id="metric-counts" class="metric-sub">8 Right / 0 Wrong</div>
+                    </div>
+                    <div class="metric-card card-time">
+                        <div class="metric-icon">⏱️</div>
+                        <div id="metric-total-time" class="metric-value">01:45</div>
+                        <div class="metric-label">Total Time Elapsed</div>
+                        <div class="metric-sub">Overall session duration</div>
+                    </div>
+                    <div class="metric-card card-speed">
+                        <div class="metric-icon">⚡</div>
+                        <div id="metric-avg-time" class="metric-value">13.1s</div>
+                        <div class="metric-label">Avg Time / Question</div>
+                        <div class="metric-sub">Pace per problem</div>
+                    </div>
+                </div>
+
+                <!-- AI Tutor Final Wrap-up -->
+                <div class="tutor-card summary-tutor-card">
+                    <div class="tutor-avatar">🤖</div>
+                    <div class="tutor-content">
+                        <div class="tutor-name">AI Tutor Final Assessment</div>
+                        <div id="summary-tutor-text" class="tutor-bubble">
+                            🎉 Session complete! Great work practicing math today!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question History Breakdown Table -->
+                <div class="history-section">
+                    <h3>📋 Question-by-Question Breakdown</h3>
+                    <div class="table-responsive">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Topic</th>
+                                    <th>Problem</th>
+                                    <th>Your Answer</th>
+                                    <th>Correct</th>
+                                    <th>Result</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <!-- Populated dynamically by app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Play Again CTA -->
+                <div class="summary-actions">
+                    <button id="btn-restart" class="btn btn-primary btn-large">
+                        Start New Session 🔄
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- JavaScript application logic -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

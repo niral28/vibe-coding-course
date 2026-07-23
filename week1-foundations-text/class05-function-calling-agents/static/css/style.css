@@ -1,0 +1,720 @@
+/* ==========================================================================
+   AI MATH TUTOR - MODERN COLORFUL DESIGN SYSTEM
+   ========================================================================== */
+
+:root {
+    --font-heading: 'Outfit', -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
+
+    /* Primary Color Palette */
+    --primary: #4F46E5;
+    --primary-gradient: linear-gradient(135deg, #6366F1 0%, #4338CA 100%);
+    --secondary-gradient: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%);
+    --success-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    --warning-gradient: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    --danger-gradient: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+
+    /* Backgrounds & Glassmorphism */
+    --bg-main: #0F172A;
+    --bg-mesh: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.25) 0px, transparent 50%),
+               radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.25) 0px, transparent 50%),
+               radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.2) 0px, transparent 50%);
+    --card-bg: rgba(30, 41, 59, 0.85);
+    --card-border: rgba(255, 255, 255, 0.12);
+
+    /* Text colors */
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+
+    /* Accent colors */
+    --accent-blue: #38BDF8;
+    --accent-emerald: #34D399;
+    --accent-amber: #FBBF24;
+    --accent-rose: #FB7185;
+    --accent-purple: #C084FC;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    background-color: var(--bg-main);
+    background-image: var(--bg-mesh);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* --- Header / Branding --- */
+.app-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+.badge-ai {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: var(--secondary-gradient);
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+/* --- Screen Transitions --- */
+.screen {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.screen.hidden {
+    display: none !important;
+    opacity: 0;
+    transform: scale(0.98);
+}
+
+.screen.active {
+    display: block;
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* --- Glassmorphism Card --- */
+.glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.card-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+}
+
+/* --- Forms & Controls --- */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-select {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+.form-select:focus {
+    border-color: #6366F1;
+}
+
+/* --- Mode Selector Grid (Either / Or) --- */
+.mode-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.mode-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mode-card.selected {
+    border-color: #6366F1;
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.mode-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.mode-radio-label input[type="radio"] {
+    accent-color: #6366F1;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.mode-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.mode-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.select-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.mode-card.selected .select-label {
+    color: var(--text-primary);
+}
+
+/* --- Level Option Grid --- */
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.level-option {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.level-option input[type="radio"] {
+    display: inline-block !important;
+    accent-color: #6366F1;
+    width: 18px;
+    height: 18px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.level-option.selected {
+    border-color: #6366F1;
+    background: rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px);
+}
+
+.level-badge {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.level-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* --- Topic Checkboxes (Visible Checkboxes Next to Topics) --- */
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.topic-checkbox {
+    background: rgba(15, 23, 42, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.topic-checkbox input[type="checkbox"] {
+    display: inline-block !important;
+    width: 20px;
+    height: 20px;
+    accent-color: #10B981; /* Emerald green checkbox */
+    cursor: pointer;
+}
+
+.topic-checkbox.checked {
+    border-color: var(--accent-emerald);
+    background: rgba(16, 185, 129, 0.2);
+}
+
+.topic-icon {
+    font-size: 1.2rem;
+}
+
+.topic-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* --- Info Note --- */
+.info-note {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.88rem;
+    color: var(--accent-blue);
+    margin-bottom: 24px;
+}
+
+/* --- Buttons --- */
+.btn {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-large {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 1.1rem;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: #FFF;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px rgba(99, 102, 241, 0.5);
+}
+
+.btn-success {
+    background: var(--success-gradient);
+    color: #FFF;
+    padding: 14px 28px;
+    font-size: 1rem;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-rose);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+}
+
+/* --- QUIZ SCREEN --- */
+.quiz-status-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.pill {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid var(--card-border);
+    border-radius: 30px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.pill-label {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pill-val {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.pill-timer .pill-val {
+    color: var(--accent-blue);
+}
+
+.pill-qtime .pill-val {
+    color: var(--accent-amber);
+}
+
+/* Banner Warning */
+.banner {
+    padding: 14px 20px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.banner-warning {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: var(--accent-amber);
+}
+
+/* Problem Display */
+.quiz-card {
+    text-align: center;
+    padding: 40px 24px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.topic-tag {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+}
+
+.badge {
+    background: rgba(99, 102, 241, 0.2);
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    color: var(--accent-purple);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.problem-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 20px 0 30px;
+}
+
+.problem-math {
+    font-family: var(--font-heading);
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #FFF 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.problem-equals {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--accent-amber);
+}
+
+/* Answer Form */
+.answer-form {
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 12px;
+}
+
+.answer-input {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.9);
+    border: 2px solid var(--card-border);
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #FFF;
+    text-align: center;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.answer-input:focus {
+    border-color: #6366F1;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* Tutor Chat Bubble */
+.tutor-card {
+    background: rgba(30, 41, 59, 0.9);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 20px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.tutor-avatar {
+    font-size: 2.2rem;
+    background: rgba(99, 102, 241, 0.15);
+    padding: 8px;
+    border-radius: 16px;
+}
+
+.tutor-content {
+    flex: 1;
+}
+
+.tutor-name {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent-purple);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.tutor-bubble {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+}
+
+.quiz-footer {
+    text-align: center;
+    margin-top: 12px;
+}
+
+/* --- SUMMARY SCREEN --- */
+.summary-card {
+    padding: 40px;
+}
+
+.summary-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.summary-badge {
+    display: inline-block;
+    background: var(--success-gradient);
+    color: #FFF;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+.summary-header h2 {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.metric-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+}
+
+.metric-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.metric-value {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.card-score .metric-value { color: var(--accent-emerald); }
+.card-time .metric-value { color: var(--accent-blue); }
+.card-speed .metric-value { color: var(--accent-amber); }
+
+.metric-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.metric-sub {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* Summary Table */
+.history-section {
+    margin-top: 32px;
+}
+
+.history-section h3 {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.history-table th, .history-table td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.history-table th {
+    color: var(--text-secondary);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.res-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+
+.res-correct {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--accent-emerald);
+}
+
+.res-wrong {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--accent-rose);
+}
+
+.summary-actions {
+    margin-top: 32px;
+    text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .problem-math { font-size: 2.5rem; }
+    .problem-equals { font-size: 2.2rem; }
+    .form-row { flex-direction: column; gap: 0; }
+    .glass-card { padding: 20px; }
+}
