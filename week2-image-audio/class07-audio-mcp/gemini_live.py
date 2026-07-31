@@ -18,8 +18,8 @@ from pynput import keyboard
 import pygame
 from dotenv import load_dotenv
 
-# Load environment variables from class1/.env
-load_dotenv('../class1/.env')
+# Load environment variables from the .env in this folder (see .env.example)
+load_dotenv()
 
 client = genai.Client(api_key=os.getenv('GEMINI_API_KEY'), http_options={'api_version': 'v1alpha'})
 
